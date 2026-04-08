@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UniHub – Smart University Collaboration Platform</title>
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue:       #3b82f6;
+      --blue-dark:  #2563eb;
+      --blue-light: #eff6ff;
+      --purple:     #8b5cf6;
+      --green:      #10b981;
+      --text:       #1e293b;
+      --muted:      #64748b;
+      --border:     #e2e8f0;
+      --bg:         #f8fafc;
+      --card:       #ffffff;
+      --radius:     14px;
+      --shadow:     0 4px 24px rgba(59,130,246,.10);
+      --shadow-sm:  0 2px 8px rgba(0,0,0,.07);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg); color: var(--text);
+      line-height: 1.6; overflow-x: hidden;
+    }
+    img { max-width: 100%; display: block; }
+    a { color: var(--blue); text-decoration: none; }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-8px); }
+    }
+    @keyframes gradientShift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .fade-up { animation: fadeUp .7s ease both; }
+    .delay-1 { animation-delay: .15s; }
+    .delay-2 { animation-delay: .30s; }
+    .delay-3 { animation-delay: .45s; }
+    .delay-4 { animation-delay: .60s; }
+
+    /* ===== NAVBAR ===== */
+    .navbar {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,.85); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 64px;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; color: var(--text); }
+    .nav-logo-icon { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--blue), var(--purple)); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .nav-links { display: flex; gap: 28px; list-style: none; }
+    .nav-links a { font-size: 14px; font-weight: 500; color: var(--muted); transition: color .2s; }
+    .nav-links a:hover { color: var(--blue); }
+    .nav-badge { background: var(--blue); color: #fff; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+    @media (max-width: 640px) { .nav-links { display: none; } .navbar { padding: 0 20px; } }
+
+    /* ===== HERO ===== */
+    .hero {
+      min-height: 92vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; text-align: center;
+      padding: 80px 24px 60px;
+      background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 50%, #ecfdf5 100%);
+      background-size: 300% 300%; animation: gradientShift 10s ease infinite;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59,130,246,.12), transparent);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.25);
+      color: var(--blue); font-size: 13px; font-weight: 600;
+      padding: 6px 16px; border-radius: 999px; margin-bottom: 28px;
+    }
+    .hero-badge span { width: 8px; height: 8px; background: var(--blue); border-radius: 50%; animation: float 2s ease-in-out infinite; }
+    .hero h1 {
+      font-size: clamp(36px, 6vw, 72px); font-weight: 800; line-height: 1.1;
+      color: var(--text); margin-bottom: 20px; letter-spacing: -1.5px;
+    }
+    .hero h1 span {
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .hero-sub {
+      font-size: clamp(16px, 2.5vw, 20px); color: var(--muted);
+      max-width: 620px; margin: 0 auto 40px; line-height: 1.7;
+    }
+    .hero-pills { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 48px; }
+    .pill {
+      background: var(--card); border: 1px solid var(--border);
+      color: var(--text); font-size: 13px; font-weight: 500;
+      padding: 7px 16px; border-radius: 999px; box-shadow: var(--shadow-sm);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .pill:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+    .hero-stats {
+      display: flex; gap: 40px; flex-wrap: wrap; justify-content: center;
+      padding: 28px 40px; background: var(--card); border-radius: 20px;
+      box-shadow: var(--shadow); border: 1px solid var(--border);
+    }
+    .hero-stat-val { font-size: 32px; font-weight: 800; color: var(--blue); }
+    .hero-stat-label { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+    /* ===== SECTION COMMON ===== */
+    section { padding: 80px 24px; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      display: inline-block; background: var(--blue-light); color: var(--blue);
+      font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 5px 14px; border-radius: 999px; margin-bottom: 14px;
+    }
+    .section-title { font-size: clamp(26px, 4vw, 40px); font-weight: 800; color: var(--text); margin-bottom: 12px; letter-spacing: -.5px; }
+    .section-sub { font-size: 16px; color: var(--muted); max-width: 560px; line-height: 1.7; }
+    .section-head { margin-bottom: 52px; }
+
+    /* ===== OVERVIEW ===== */
+    .overview { background: var(--card); }
+    .overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+    .overview-text p { font-size: 16px; color: var(--muted); line-height: 1.8; margin-bottom: 16px; }
+    .overview-text p:last-child { margin-bottom: 0; }
+    .overview-visual {
+      background: linear-gradient(135deg, var(--blue-light), #f5f3ff);
+      border-radius: 20px; padding: 32px; display: flex; flex-direction: column; gap: 14px;
+      border: 1px solid var(--border);
+    }
+    .ov-item {
+      display: flex; align-items: center; gap: 14px;
+      background: var(--card); border-radius: 12px; padding: 14px 18px;
+      box-shadow: var(--shadow-sm); transition: transform .2s;
+    }
+    .ov-item:hover { transform: translateX(4px); }
+    .ov-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .ov-item-text { font-size: 14px; font-weight: 600; color: var(--text); }
+    .ov-item-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    @media (max-width: 768px) { .overview-grid { grid-template-columns: 1fr; } }
+
+    /* ===== TECH STACK ===== */
+    .tech { background: var(--bg); }
+    .tech-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .tech-card {
+      background: var(--card); border-radius: var(--radius); padding: 24px;
+      border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .tech-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+    .tech-card-icon { font-size: 28px; margin-bottom: 12px; }
+    .tech-card-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .tech-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag { background: var(--blue-light); color: var(--blue); font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 999px; }
+    .tag.purple { background: #f5f3ff; color: var(--purple); }
+    .tag.green  { background: #ecfdf5; color: var(--green); }
+    .tag.gray   { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
+    @media (max-width: 768px) { .tech-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 480px) { .tech-grid { grid-template-columns: 1fr; } }
+
+    /* ===== FEATURES ===== */
+    .features { background: linear-gradient(180deg, var(--card) 0%, var(--bg) 100%); }
+    .features-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .feat-card {
+      background: var(--card); border-radius: var(--radius); padding: 24px;
+      border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+      transition: transform .25s, box-shadow .25s;
+    }
+    .feat-card:hover { transform: translateY(-6px); box-shadow: var(--shadow); }
+    .feat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 14px; }
+    .feat-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .feat-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    @media (max-width: 900px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .features-grid { grid-template-columns: 1fr; } }
+
+    /* ===== MOCKUPS ===== */
+    .mockups { background: var(--bg); }
+    .mockup-item {
+      margin-bottom: 64px; opacity: 0;
+      animation: fadeUp .7s ease both;
+    }
+    .mockup-item:nth-child(1) { animation-delay: .1s; }
+    .mockup-item:nth-child(2) { animation-delay: .2s; }
+    .mockup-item:nth-child(3) { animation-delay: .3s; }
+    .mockup-item:nth-child(4) { animation-delay: .4s; }
+    .mockup-item:nth-child(5) { animation-delay: .5s; }
+    .mockup-item:nth-child(6) { animation-delay: .6s; }
+    .mockup-item:nth-child(7) { animation-delay: .7s; }
+    .mockup-item:nth-child(8) { animation-delay: .8s; }
+    .mockup-label {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 700; color: var(--blue);
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
+    }
+    .mockup-label::before { content: ''; width: 20px; height: 3px; background: var(--blue); border-radius: 2px; }
+    .mockup-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .mockup-desc { font-size: 14px; color: var(--muted); margin-bottom: 20px; max-width: 600px; line-height: 1.7; }
+    .mockup-frame {
+      border-radius: 18px; overflow: hidden;
+      box-shadow: 0 8px 40px rgba(59,130,246,.15), 0 2px 8px rgba(0,0,0,.08);
+      border: 1px solid var(--border);
+      transition: transform .3s, box-shadow .3s;
+      background: var(--card);
+    }
+    .mockup-frame:hover { transform: translateY(-4px) scale(1.005); box-shadow: 0 16px 56px rgba(59,130,246,.2); }
+    .mockup-bar {
+      background: #f1f5f9; padding: 10px 16px;
+      display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+    .url-bar {
+      flex: 1; background: var(--card); border-radius: 6px;
+      padding: 4px 12px; font-size: 12px; color: var(--muted);
+      border: 1px solid var(--border); margin-left: 8px;
+    }
+    /* The actual screen rendered as HTML inside the frame */
+    .screen { width: 100%; min-height: 480px; pointer-events: none; user-select: none; }
+
+    /* ===== SCREEN: AUTH ===== */
+    .s-auth {
+      min-height: 480px; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%); padding: 40px 20px;
+    }
+    .s-auth-card {
+      background: var(--card); border-radius: 20px; padding: 36px 32px;
+      width: 100%; max-width: 380px; box-shadow: 0 8px 32px rgba(0,0,0,.1);
+    }
+    .s-logo { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; }
+    .s-logo-icon { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg,#3b82f6,#8b5cf6); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .s-logo-text { font-size: 17px; font-weight: 700; color: var(--text); }
+    .s-title { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .s-sub { font-size: 13px; color: var(--muted); margin-bottom: 22px; }
+    .s-label { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+    .s-input {
+      width: 100%; padding: 9px 13px; border: 1px solid var(--border);
+      border-radius: 10px; font-size: 13px; color: var(--text);
+      background: var(--bg); margin-bottom: 14px;
+    }
+    .s-btn {
+      width: 100%; padding: 11px; background: linear-gradient(135deg,#3b82f6,#2563eb);
+      color: #fff; border-radius: 10px; font-size: 14px; font-weight: 600;
+      text-align: center; margin-bottom: 14px;
+    }
+    .s-divider { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; margin-bottom: 14px; }
+    .s-divider::before, .s-divider::after { content:''; flex:1; height:1px; background:var(--border); }
+    .s-btn-outline {
+      width: 100%; padding: 10px; border: 1px solid var(--border);
+      border-radius: 10px; font-size: 13px; font-weight: 500; color: var(--text);
+      text-align: center; background: var(--card);
+    }
+    .s-footer { text-align: center; font-size: 12px; color: var(--muted); margin-top: 18px; }
+    .s-footer span { color: var(--blue); font-weight: 600; }
+
+    /* ===== SCREEN: APP SHELL ===== */
+    .s-shell { display: flex; min-height: 520px; background: var(--bg); }
+    .s-sidebar {
+      width: 200px; background: var(--card); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; flex-shrink: 0;
+    }
+    .s-sidebar-logo {
+      height: 52px; display: flex; align-items: center; gap: 8px;
+      padding: 0 16px; border-bottom: 1px solid var(--border);
+    }
+    .s-nav { padding: 12px 10px; flex: 1; }
+    .s-nav-item {
+      display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+      border-radius: 10px; font-size: 12px; font-weight: 500; color: var(--muted);
+      margin-bottom: 3px;
+    }
+    .s-nav-item.active { background: #3b82f6; color: #fff; }
+    .s-nav-dot { width: 16px; height: 16px; border-radius: 4px; background: currentColor; opacity: .3; flex-shrink: 0; }
+    .s-nav-item.active .s-nav-dot { opacity: 1; background: rgba(255,255,255,.5); }
+    .s-sidebar-user { padding: 12px; border-top: 1px solid var(--border); }
+    .s-user-row { display: flex; align-items: center; gap: 8px; background: var(--bg); border-radius: 10px; padding: 10px; }
+    .s-av { width: 30px; height: 30px; border-radius: 50%; background: #eff6ff; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #3b82f6; flex-shrink: 0; }
+    .s-av.lg { width: 72px; height: 72px; font-size: 22px; }
+    .s-av.sm { width: 26px; height: 26px; font-size: 9px; }
+    .s-uname { font-size: 11px; font-weight: 600; color: var(--text); }
+    .s-urole { font-size: 10px; color: var(--muted); }
+    .s-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .s-navbar {
+      height: 52px; background: var(--card); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 12px; padding: 0 18px;
+    }
+    .s-search {
+      flex: 1; max-width: 280px; background: var(--bg); border-radius: 8px;
+      padding: 6px 12px; font-size: 11px; color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .s-bell { width: 28px; height: 28px; border-radius: 50%; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 13px; margin-left: auto; position: relative; }
+    .s-bell-dot { position: absolute; top: 3px; right: 3px; width: 8px; height: 8px; background: #3b82f6; border-radius: 50%; border: 1.5px solid var(--card); }
+    .s-main { flex: 1; padding: 18px; overflow: hidden; }
+    .s-page-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .s-page-sub { font-size: 11px; color: var(--muted); margin-bottom: 16px; }
+
+    /* ===== SCREEN COMPONENTS ===== */
+    .s-grid4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 16px; }
+    .s-grid3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+    .s-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .s-card { background: var(--card); border-radius: 10px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+    .s-stat-label { font-size: 10px; color: var(--muted); font-weight: 500; }
+    .s-stat-val { font-size: 22px; font-weight: 800; color: var(--text); margin: 2px 0; }
+    .s-stat-badge { display: inline-block; font-size: 9px; font-weight: 600; padding: 2px 7px; border-radius: 999px; }
+    .s-badge-green { background: #ecfdf5; color: #10b981; }
+    .s-badge-red   { background: #fef2f2; color: #ef4444; }
+    .s-badge-blue  { background: #eff6ff; color: #3b82f6; }
+    .s-badge-purple{ background: #f5f3ff; color: #8b5cf6; }
+    .s-badge-yellow{ background: #fffbeb; color: #f59e0b; }
+    .s-card-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+    .s-activity-item { display: flex; align-items: flex-start; gap: 8px; padding: 7px; border-radius: 8px; margin-bottom: 4px; }
+    .s-activity-item:hover { background: var(--bg); }
+    .s-act-text { font-size: 10px; color: var(--text); line-height: 1.5; }
+    .s-act-text b { font-weight: 600; }
+    .s-act-time { font-size: 9px; color: var(--muted); margin-top: 2px; }
+    .s-quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .s-quick-btn { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 6px; text-align: center; font-size: 10px; font-weight: 500; color: var(--text); }
+    .s-quick-btn.primary { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+    .s-quick-icon { font-size: 14px; margin-bottom: 4px; }
+    .s-deadline { padding: 8px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; }
+    .s-dl-title { font-size: 10px; font-weight: 600; color: var(--text); }
+    .s-dl-team  { font-size: 9px; color: var(--muted); }
+    .s-dl-date  { font-size: 9px; color: var(--muted); margin-top: 4px; }
+    /* Team card */
+    .s-team-card { background: var(--card); border-radius: 10px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+    .s-team-icon { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .s-team-name { font-size: 12px; font-weight: 700; color: var(--text); }
+    .s-team-desc { font-size: 10px; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+    .s-members { display: flex; margin-top: 10px; }
+    .s-mav { width: 20px; height: 20px; border-radius: 50%; background: #eff6ff; border: 1.5px solid var(--card); display: flex; align-items: center; justify-content: center; font-size: 7px; font-weight: 700; color: #3b82f6; margin-left: -5px; }
+    .s-mav:first-child { margin-left: 0; }
+    .s-progress-bar { height: 5px; background: var(--bg); border-radius: 999px; overflow: hidden; margin-top: 8px; }
+    .s-progress-fill { height: 100%; border-radius: 999px; }
+    /* Kanban */
+    .s-kanban { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+    .s-col { background: var(--bg); border-radius: 10px; padding: 12px; }
+    .s-col-header { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+    .s-col-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .s-task { background: var(--card); border-radius: 8px; padding: 10px; margin-bottom: 7px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+    .s-task-title { font-size: 10px; font-weight: 600; color: var(--text); }
+    .s-task-meta { display: flex; justify-content: space-between; margin-top: 6px; font-size: 9px; color: var(--muted); }
+    /* Messages */
+    .s-msg-layout { display: flex; height: 100%; gap: 10px; }
+    .s-chat-list { width: 160px; background: var(--card); border-radius: 10px; overflow: hidden; flex-shrink: 0; }
+    .s-chat-list-hdr { padding: 10px 12px; font-size: 11px; font-weight: 700; border-bottom: 1px solid var(--border); }
+    .s-chat-item { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-bottom: 1px solid var(--border); }
+    .s-chat-item.active { background: #eff6ff; }
+    .s-chat-name { font-size: 10px; font-weight: 600; color: var(--text); }
+    .s-chat-last { font-size: 9px; color: var(--muted); }
+    .s-chat-panel { flex: 1; background: var(--card); border-radius: 10px; display: flex; flex-direction: column; }
+    .s-chat-hdr { padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+    .s-chat-hdr-name { font-size: 12px; font-weight: 700; }
+    .s-messages { flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+    .s-msg { display: flex; gap: 7px; max-width: 80%; }
+    .s-msg.sent { flex-direction: row-reverse; align-self: flex-end; }
+    .s-bubble { padding: 7px 10px; border-radius: 12px; font-size: 10px; line-height: 1.5; }
+    .s-msg.received .s-bubble { background: var(--bg); color: var(--text); border-bottom-left-radius: 3px; }
+    .s-msg.sent .s-bubble { background: #3b82f6; color: #fff; border-bottom-right-radius: 3px; }
+    .s-chat-input { padding: 10px 14px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+    .s-input-box { flex: 1; background: var(--bg); border-radius: 8px; padding: 7px 12px; font-size: 10px; color: var(--muted); border: 1px solid var(--border); }
+    .s-send-btn { background: #3b82f6; color: #fff; border-radius: 8px; padding: 7px 12px; font-size: 10px; font-weight: 600; }
+    /* Resources */
+    .s-res-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+    .s-res-card { background: var(--card); border-radius: 10px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+    .s-res-icon { font-size: 22px; margin-bottom: 8px; }
+    .s-res-name { font-size: 10px; font-weight: 600; color: var(--text); }
+    .s-res-meta { font-size: 9px; color: var(--muted); margin-top: 3px; }
+    /* Notifications */
+    .s-notif { background: var(--card); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; gap: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+    .s-notif.unread { border-left: 3px solid #3b82f6; background: #eff6ff; }
+    .s-notif-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+    .s-notif-title { font-size: 11px; font-weight: 700; color: var(--text); }
+    .s-notif-msg { font-size: 10px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+    .s-notif-time { font-size: 9px; color: var(--muted); margin-top: 4px; }
+    /* Profile */
+    .s-profile-layout { display: grid; grid-template-columns: 180px 1fr; gap: 14px; }
+    .s-profile-card { background: var(--card); border-radius: 10px; padding: 18px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+    .s-profile-name { font-size: 13px; font-weight: 700; color: var(--text); margin-top: 10px; }
+    .s-profile-role { font-size: 10px; color: var(--muted); }
+    .s-profile-stats { display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin: 12px 0; }
+    .s-pstat-val { font-size: 16px; font-weight: 800; color: var(--text); }
+    .s-pstat-label { font-size: 9px; color: var(--muted); }
+    .s-contact-item { display: flex; align-items: center; gap: 6px; font-size: 9px; color: var(--muted); margin-bottom: 6px; }
+    .s-skill { display: inline-block; background: var(--bg); border: 1px solid var(--border); color: var(--text); font-size: 9px; padding: 3px 8px; border-radius: 999px; margin: 3px; }
+
+    /* ===== FOLDER STRUCTURE ===== */
+    .codebase { background: var(--card); }
+    .fs-wrap {
+      display: grid; grid-template-columns: 340px 1fr; gap: 32px; align-items: flex-start;
+    }
+    /* Tree */
+    .tree-box {
+      background: #0f172a; border-radius: 16px; overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,.25); position: sticky; top: 84px;
+    }
+    .tree-bar {
+      background: #1e293b; padding: 12px 16px; display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid #334155;
+    }
+    .tree-bar span { font-size: 12px; color: #64748b; margin-left: 8px; font-family: monospace; }
+    .tree-body { padding: 16px; overflow-y: auto; max-height: 70vh; }
+    .tree-body::-webkit-scrollbar { width: 4px; }
+    .tree-body::-webkit-scrollbar-track { background: transparent; }
+    .tree-body::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    .tree-line {
+      display: flex; align-items: center; gap: 6px; padding: 3px 0;
+      font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5;
+      cursor: pointer; border-radius: 4px; padding: 3px 6px; transition: background .15s;
+    }
+    .tree-line:hover { background: rgba(255,255,255,.05); }
+    .tree-line.active { background: rgba(59,130,246,.2); }
+    .tree-indent { display: inline-block; width: 16px; flex-shrink: 0; }
+    .tree-icon { font-size: 13px; flex-shrink: 0; }
+    .tree-name { color: #e2e8f0; }
+    .tree-name.folder { color: #93c5fd; font-weight: 600; }
+    .tree-name.config { color: #fde68a; }
+    .tree-name.css { color: #86efac; }
+    .tree-name.ts { color: #67e8f9; }
+    .tree-name.json { color: #fca5a5; }
+    .tree-connector { color: #334155; }
+    /* Code panel */
+    .code-panel { display: flex; flex-direction: column; gap: 0; }
+    .code-file-header {
+      background: #1e293b; border-radius: 12px 12px 0 0; padding: 12px 20px;
+      display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #334155;
+    }
+    .code-file-path { font-family: monospace; font-size: 13px; color: #93c5fd; }
+    .code-file-lang { font-size: 11px; color: #64748b; margin-left: auto; background: #0f172a; padding: 2px 8px; border-radius: 4px; }
+    .code-block {
+      background: #0f172a; border-radius: 0 0 12px 12px;
+      overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,.2);
+    }
+    .code-block pre {
+      margin: 0; padding: 20px; overflow-x: auto; font-family: 'Courier New', monospace;
+      font-size: 12px; line-height: 1.7; color: #e2e8f0; max-height: 420px; overflow-y: auto;
+    }
+    .code-block pre::-webkit-scrollbar { width: 4px; height: 4px; }
+    .code-block pre::-webkit-scrollbar-track { background: transparent; }
+    .code-block pre::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    /* syntax colors */
+    .kw  { color: #c084fc; }   /* keywords */
+    .fn  { color: #67e8f9; }   /* functions */
+    .str { color: #86efac; }   /* strings */
+    .cm  { color: #475569; font-style: italic; } /* comments */
+    .num { color: #fca5a5; }   /* numbers */
+    .tag { color: #93c5fd; }   /* jsx tags */
+    .atr { color: #fde68a; }   /* attributes */
+    .typ { color: #f9a8d4; }   /* types */
+    .pun { color: #94a3b8; }   /* punctuation */
+    .imp { color: #fb923c; }   /* imports */
+    /* file tabs */
+    .file-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+    .file-tab {
+      padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 500;
+      cursor: pointer; border: 1px solid var(--border); color: var(--muted);
+      background: var(--card); transition: all .15s; font-family: monospace;
+    }
+    .file-tab:hover { border-color: var(--blue); color: var(--blue); }
+    .file-tab.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .code-section { display: none; }
+    .code-section.active { display: block; }
+    @media (max-width: 900px) { .fs-wrap { grid-template-columns: 1fr; } .tree-box { position: static; } }
+
+    /* ===== CONCLUSION ===== */
+    .conclusion {
+      background: linear-gradient(135deg, #1e293b 0%, #1e1b4b 100%);
+      color: #fff; text-align: center; padding: 100px 24px;
+    }
+    .conclusion .section-label { background: rgba(255,255,255,.1); color: #93c5fd; }
+    .conclusion .section-title { color: #fff; }
+    .conclusion .section-sub { color: #94a3b8; margin: 0 auto 48px; }
+    .conclusion-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; max-width: 800px; margin: 0 auto 48px; }
+    .conc-card { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); border-radius: var(--radius); padding: 24px; transition: background .2s; }
+    .conc-card:hover { background: rgba(255,255,255,.12); }
+    .conc-icon { font-size: 28px; margin-bottom: 10px; }
+    .conc-title { font-size: 14px; font-weight: 700; color: #e2e8f0; margin-bottom: 6px; }
+    .conc-desc { font-size: 12px; color: #94a3b8; line-height: 1.6; }
+    .future-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 48px; }
+    .future-pill { background: rgba(59,130,246,.2); border: 1px solid rgba(59,130,246,.3); color: #93c5fd; font-size: 13px; font-weight: 500; padding: 8px 18px; border-radius: 999px; }
+    .conclusion-cta { font-size: 18px; color: #cbd5e1; max-width: 560px; margin: 0 auto; line-height: 1.7; }
+    @media (max-width: 640px) { .conclusion-grid { grid-template-columns: 1fr; } }
+
+    /* ===== FOOTER ===== */
+    footer {
+      background: #0f172a; color: #64748b;
+      text-align: center; padding: 32px 24px;
+      font-size: 13px; border-top: 1px solid #1e293b;
+    }
+    footer strong { color: #94a3b8; }
+  </style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+  <div class="nav-logo">
+    <div class="nav-logo-icon">🎓</div>
+    UniHub
+  </div>
+  <ul class="nav-links">
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#tech">Tech Stack</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#structure">Structure</a></li>
+    <li><a href="#team">Team</a></li>
+    <li><a href="#workflow">Workflow</a></li>
+    <li><a href="#mockups">Screens</a></li>
+    <li><a href="#codebase">Codebase</a></li>
+    <li><a href="#conclusion">Conclusion</a></li>
+  </ul>
+  <span class="nav-badge">2026</span>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero-badge"><span></span> University Collaboration Platform</div>
+  <h1 class="fade-up">Meet <span>UniHub</span><br/>Built for Students,<br/>Designed for Teams</h1>
+  <p class="hero-sub fade-up delay-1">A full-stack web application that transforms how university students collaborate, manage projects, communicate, and share knowledge — all in one place.</p>
+  <div class="hero-pills fade-up delay-2">
+    <span class="pill">⚛️ React</span>
+    <span class="pill">🟢 Node.js</span>
+    <span class="pill">🍃 MongoDB</span>
+    <span class="pill">🔌 Socket.io</span>
+    <span class="pill">🎨 Tailwind CSS</span>
+    <span class="pill">🔐 JWT Auth</span>
+  </div>
+  <div class="hero-stats fade-up delay-3">
+    <div><div class="hero-stat-val">8</div><div class="hero-stat-label">Core Features</div></div>
+    <div><div class="hero-stat-val">5</div><div class="hero-stat-label">Active Teams</div></div>
+    <div><div class="hero-stat-val">7</div><div class="hero-stat-label">App Screens</div></div>
+    <div><div class="hero-stat-val">100%</div><div class="hero-stat-label">Full-Stack</div></div>
+  </div>
+</section>
+
+<!-- ===== OVERVIEW ===== -->
+<section class="overview" id="overview">
+  <div class="container">
+    <div class="overview-grid">
+      <div class="overview-text fade-up">
+        <span class="section-label">Project Overview</span>
+        <h2 class="section-title">What is UniHub?</h2>
+        <p>UniHub is a full-stack web application designed to improve how university students collaborate, manage projects, and share knowledge. It simulates a real-world software development environment while solving genuine collaboration challenges faced by student teams.</p>
+        <p>The platform brings together task management, real-time communication, file sharing, and team coordination into a single, cohesive experience — giving students hands-on exposure to modern development tools and workflows.</p>
+        <p>Built with a client-server architecture, UniHub uses React on the frontend, Node.js and Express on the backend, and MongoDB for data persistence — with Socket.io powering real-time features.</p>
+      </div>
+      <div class="overview-visual fade-up delay-2">
+        <div class="ov-item">
+          <div class="ov-icon" style="background:#eff6ff;">🤝</div>
+          <div><div class="ov-item-text">Team Collaboration</div><div class="ov-item-sub">Create teams, assign roles, invite members</div></div>
+        </div>
+        <div class="ov-item">
+          <div class="ov-icon" style="background:#f5f3ff;">📋</div>
+          <div><div class="ov-item-text">Task Management</div><div class="ov-item-sub">Kanban board — To Do → In Progress → Done</div></div>
+        </div>
+        <div class="ov-item">
+          <div class="ov-icon" style="background:#ecfdf5;">💬</div>
+          <div><div class="ov-item-text">Real-Time Chat</div><div class="ov-item-sub">Team messaging powered by Socket.io</div></div>
+        </div>
+        <div class="ov-item">
+          <div class="ov-icon" style="background:#fffbeb;">📁</div>
+          <div><div class="ov-item-text">Resource Sharing</div><div class="ov-item-sub">Upload and organize files per team</div></div>
+        </div>
+        <div class="ov-item">
+          <div class="ov-icon" style="background:#fef2f2;">🔔</div>
+          <div><div class="ov-item-text">Notifications</div><div class="ov-item-sub">Real-time alerts for tasks, messages, invites</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TECH STACK ===== -->
+<section class="tech" id="tech">
+  <div class="container">
+    <div class="section-head fade-up">
+      <span class="section-label">Technology Stack</span>
+      <h2 class="section-title">Built with Modern Tools</h2>
+      <p class="section-sub">A carefully chosen stack that mirrors real-world industry standards and gives students practical experience with production-grade technologies.</p>
+    </div>
+    <div class="tech-grid">
+      <div class="tech-card fade-up delay-1">
+        <div class="tech-card-icon">⚛️</div>
+        <div class="tech-card-title">Frontend</div>
+        <div class="tech-tags">
+          <span class="tag">React</span>
+          <span class="tag">Tailwind CSS</span>
+          <span class="tag">Axios</span>
+          <span class="tag">React Router</span>
+        </div>
+      </div>
+      <div class="tech-card fade-up delay-2">
+        <div class="tech-card-icon">🟢</div>
+        <div class="tech-card-title">Backend</div>
+        <div class="tech-tags">
+          <span class="tag purple">Node.js</span>
+          <span class="tag purple">Express.js</span>
+          <span class="tag purple">REST API</span>
+        </div>
+      </div>
+      <div class="tech-card fade-up delay-3">
+        <div class="tech-card-icon">🍃</div>
+        <div class="tech-card-title">Database</div>
+        <div class="tech-tags">
+          <span class="tag green">MongoDB</span>
+          <span class="tag green">Mongoose</span>
+        </div>
+      </div>
+      <div class="tech-card fade-up delay-1">
+        <div class="tech-card-icon">🔐</div>
+        <div class="tech-card-title">Security</div>
+        <div class="tech-tags">
+          <span class="tag">JWT</span>
+          <span class="tag">bcrypt</span>
+          <span class="tag">dotenv</span>
+        </div>
+      </div>
+      <div class="tech-card fade-up delay-2">
+        <div class="tech-card-icon">🔌</div>
+        <div class="tech-card-title">Real-Time</div>
+        <div class="tech-tags">
+          <span class="tag purple">Socket.io</span>
+          <span class="tag purple">WebSockets</span>
+        </div>
+      </div>
+      <div class="tech-card fade-up delay-3">
+        <div class="tech-card-icon">📦</div>
+        <div class="tech-card-title">DevOps & Tools</div>
+        <div class="tech-tags">
+          <span class="tag gray">GitHub</span>
+          <span class="tag gray">multer</span>
+          <span class="tag gray">Agile</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="section-head fade-up" style="text-align:center;">
+      <span class="section-label">Core Features</span>
+      <h2 class="section-title">Everything a Student Team Needs</h2>
+      <p class="section-sub" style="margin:0 auto;">Eight carefully designed features that cover the full lifecycle of a university project — from team formation to final delivery.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feat-card fade-up delay-1">
+        <div class="feat-icon" style="background:#eff6ff;">🔐</div>
+        <div class="feat-title">User Management</div>
+        <div class="feat-desc">Secure registration and login with JWT authentication and bcrypt password hashing. Full profile management with bio, skills, and avatars.</div>
+      </div>
+      <div class="feat-card fade-up delay-2">
+        <div class="feat-icon" style="background:#f5f3ff;">👥</div>
+        <div class="feat-title">Team Collaboration</div>
+        <div class="feat-desc">Create teams, invite members via links, and assign roles (Leader / Member). Organize work across multiple project teams simultaneously.</div>
+      </div>
+      <div class="feat-card fade-up delay-3">
+        <div class="feat-icon" style="background:#ecfdf5;">📋</div>
+        <div class="feat-title">Task Management</div>
+        <div class="feat-desc">Mini Jira-style Kanban board. Create, assign, and set deadlines for tasks. Track status from To Do → In Progress → Done.</div>
+      </div>
+      <div class="feat-card fade-up delay-4">
+        <div class="feat-icon" style="background:#fffbeb;">💬</div>
+        <div class="feat-title">Real-Time Chat</div>
+        <div class="feat-desc">Team-based messaging and direct messages powered by Socket.io. Stay in sync with your team without leaving the platform.</div>
+      </div>
+      <div class="feat-card fade-up delay-1">
+        <div class="feat-icon" style="background:#fef2f2;">📁</div>
+        <div class="feat-title">Resource Sharing</div>
+        <div class="feat-desc">Upload PDFs, images, and documents via multer. Resources are organized per team so everyone can find what they need.</div>
+      </div>
+      <div class="feat-card fade-up delay-2">
+        <div class="feat-icon" style="background:#eff6ff;">🔔</div>
+        <div class="feat-title">Notifications</div>
+        <div class="feat-desc">Real-time alerts for task assignments, new messages, team invitations, and deadline reminders. Never miss an update.</div>
+      </div>
+      <div class="feat-card fade-up delay-3">
+        <div class="feat-icon" style="background:#f5f3ff;">📊</div>
+        <div class="feat-title">Dashboard & Analytics</div>
+        <div class="feat-desc">A central hub showing task summaries, team activity feeds, upcoming deadlines, and progress overviews at a glance.</div>
+      </div>
+      <div class="feat-card fade-up delay-4">
+        <div class="feat-icon" style="background:#ecfdf5;">🛡️</div>
+        <div class="feat-title">Admin Panel</div>
+        <div class="feat-desc">Advanced feature for managing users, monitoring platform activity, and handling reports. Full oversight for administrators.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PROJECT STRUCTURE ===== -->
+<section class="overview" id="structure">
+  <div class="container">
+    <div class="section-head fade-up">
+      <span class="section-label">Project Architecture</span>
+      <h2 class="section-title">Overall Project Structure</h2>
+      <p class="section-sub">A well-organized full-stack application with clear separation of concerns across frontend, backend, and database layers.</p>
+    </div>
+    <div class="overview-visual fade-up delay-1">
+      <div style="background:#0f172a;color:#e2e8f0;font-family:'Courier New',monospace;font-size:12px;padding:20px;border-radius:12px;overflow-x:auto;">
+        <div style="color:#94a3b8;margin-bottom:8px;">🧠 Overall Project Structure</div>
+        <div style="color:#64748b;">project-root/</div>
+        <div style="color:#64748b;">│</div>
+        <div style="color:#64748b;">├── frontend/</div>
+        <div style="color:#64748b;">│   ├── public/</div>
+        <div style="color:#64748b;">│   └── src/</div>
+        <div style="color:#64748b;">│       ├── components/</div>
+        <div style="color:#64748b;">│       ├── pages/</div>
+        <div style="color:#64748b;">│       ├── services/</div>
+        <div style="color:#64748b;">│       ├── hooks/</div>
+        <div style="color:#64748b;">│       ├── utils/</div>
+        <div style="color:#64748b;">│       ├── App.jsx</div>
+        <div style="color:#64748b;">│       └── main.jsx</div>
+        <div style="color:#64748b;">│</div>
+        <div style="color:#64748b;">├── backend/</div>
+        <div style="color:#64748b;">│   ├── controllers/</div>
+        <div style="color:#64748b;">│   ├── routes/</div>
+        <div style="color:#64748b;">│   ├── models/</div>
+        <div style="color:#64748b;">│   ├── middleware/</div>
+        <div style="color:#64748b;">│   ├── services/</div>
+        <div style="color:#64748b;">│   ├── config/</div>
+        <div style="color:#64748b;">│   └── server.js</div>
+        <div style="color:#64748b;">│</div>
+        <div style="color:#64748b;">├── database/</div>
+        <div style="color:#64748b;">│   ├── schema/</div>
+        <div style="color:#64748b;">│   ├── migrations/</div>
+        <div style="color:#64748b;">│   └── seed/</div>
+        <div style="color:#64748b;">│</div>
+        <div style="color:#64748b;">└── README.md</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TEAM DISTRIBUTION ===== -->
+<section class="features" id="team">
+  <div class="container">
+    <div class="section-head fade-up" style="text-align:center;">
+      <span class="section-label">Team Organization</span>
+      <h2 class="section-title">Task Distribution + Folder Mapping</h2>
+      <p class="section-sub" style="margin:0 auto;">14 students working in coordinated teams across frontend, backend, database, testing, and integration.</p>
+    </div>
+    
+    <!-- Frontend Team -->
+    <div style="margin-bottom:48px;">
+      <div style="background:#eff6ff;border:1px solid #3b82f6;border-radius:12px;padding:16px;margin-bottom:20px;">
+        <div style="font-size:18px;font-weight:700;color:#3b82f6;margin-bottom:8px;">🎨 FRONTEND TEAM (5 Students)</div>
+      </div>
+      <div class="features-grid" style="grid-template-columns:1fr;gap:16px;">
+        <div class="feat-card fade-up delay-1">
+          <div class="feat-icon" style="background:#eff6ff;">👨‍💻</div>
+          <div class="feat-title">Student 1 — UI Structure & Routing</div>
+          <div class="feat-desc"><strong>📁 Works on:</strong> frontend/src/App.jsx, frontend/src/pages/<br><strong>Task:</strong> Setup routing, Define page navigation, Connect all pages together</div>
+        </div>
+        <div class="feat-card fade-up delay-2">
+          <div class="feat-icon" style="background:#eff6ff;">👨‍💻</div>
+          <div class="feat-title">Student 2 — Authentication UI</div>
+          <div class="feat-desc"><strong>📁 Works on:</strong> frontend/src/pages/auth/, frontend/src/components/<br><strong>Task:</strong> Login page, Register page, Form inputs & validation UI</div>
+        </div>
+        <div class="feat-card fade-up delay-3">
+          <div class="feat-icon" style="background:#eff6ff;">👨‍💻</div>
+          <div class="feat-title">Student 3 — Dashboard UI</div>
+          <div class="feat-desc"><strong>📁 Works on:</strong> frontend/src/pages/dashboard/<br><strong>Task:</strong> Dashboard layout, Display user data, Cards/widgets/charts</div>
+        </div>
+        <div class="feat-card fade-up delay-4">
+          <div class="feat-icon" style="background:#eff6ff;">👨‍💻</div>
+          <div class="feat-title">Student 4 — Reusable Components</div>
+          <div class="feat-desc"><strong>📁 Works on:</strong> frontend/src/components/<br><strong>Task:</strong> Navbar, Sidebar, Buttons, inputs, cards, Footer</div>
+        </div>
+        <div class="feat-card fade-up delay-1">
+          <div class="feat-icon" style="background:#eff6ff;">👨‍💻</div>
+          <div class="feat-title">Student 5 — API Integration (Frontend Services)</div>
+          <div class="feat-desc"><strong>📁 Works on:</strong> frontend/src/services/, frontend/src/utils/<br><strong>Task:</strong> Connect frontend to backend APIs, Handle API requests, Manage loading & errors</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Backend Team -->
+    <div style="margin-bottom:48px;">
+      <div style="background:#f5f3ff;border:1px solid #8b5cf6;border-radius:12px;padding:16px;margin-bottom:20px;">
+        <div style="font-size:18px;font-weight:700;color:#8b5cf6;margin-bottom:8px;">⚙️ BACKEND TEAM (4 Students)</div>
+      </div>
+      <div class="features-grid" style="grid-template-columns:1fr;gap:16px;">
+        <div class="feat-card fade-up delay-1">
+          <div class="feat-icon" style="background:#f5f3ff;">👨‍💻</div>
+          <div class="feat-title">Student 6 — Server Setup & Config</div>
+          <div class="feat-desc"><strong>📁 Works on:</strong> backend/server.js, backend/config/<br><strong>Task:</strong> Setup server, Environment configuration, Middleware setup</div>
+        </div>
+        <div class="feat-card fade-up delay-2">
+          <div class="feat-icon" style="background:#f5f3ff;">👨‍💻</div>
+          <div class="feat-title">Student 7 — Authentication System</div>
+          <div class="feat-desc"><strong>📁 Works on:</strong> backend/controllers/authController.js, backend/routes/authRoutes.js, backend/middleware/<br><strong>Task:</strong> Login/register logic, Password hashing, Authentication handling</div>
+        </div>
+        <div class="feat-card fade-up delay-3">
+          <div class="feat-icon" style="background:#f5f3ff;">👨‍💻</div>
+          <div class="feat-title">Student 8 — Core APIs (Business Logic)</div>
+          <div class="feat-desc"><strong>📁 Works on:</strong> backend/controllers/, backend/routes/<br><strong>Task:</strong> Main application features, Handle requests from frontend, Implement business logic</div>
+        </div>
+        <div class="feat-card fade-up delay-4">
+          <div class="feat-icon" style="background:#f5f3ff;">👨‍💻</div>
+          <div class="feat-title">Student 9 — Middleware & Utilities</div>
+          <div class="feat-desc"><strong>📁 Works on:</strong> backend/middleware/, backend/services/, backend/utils/ (if created)<br><strong>Task:</strong> Authorization checks, Input validation, Error handling, Helper functions</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Database Team -->
+    <div style="margin-bottom:48px;">
+      <div style="background:#ecfdf5;border:1px solid #10b981;border-radius:12px;padding:16px;margin-bottom:20px;">
+        <div style="font-size:18px;font-weight:700;color:#10b981;margin-bottom:8px;">🗄️ DATABASE TEAM (2 Students)</div>
+      </div>
+      <div class="features-grid" style="grid-template-columns:1fr;gap:16px;">
+        <div class="feat-card fade-up delay-1">
+          <div class="feat-icon" style="background:#ecfdf5;">👨‍💻</div>
+          <div class="feat-title">Student 10 — Database Design</div>
+          <div class="feat-desc"><strong>📁 Works on:</strong> database/schema/<br><strong>Task:</strong> Design tables/collections, Define relationships, Plan data structure</div>
+        </div>
+        <div class="feat-card fade-up delay-2">
+          <div class="feat-icon" style="background:#ecfdf5;">👨‍💻</div>
+          <div class="feat-title">Student 11 — Database Implementation & Optimization</div>
+          <div class="feat-desc"><strong>📁 Works on:</strong> backend/models/, backend/config/, database/migrations/, database/seed/<br><strong>Task:</strong> Implement database connection, Create models, Optimize queries, Seed initial data</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Testing Team -->
+    <div style="margin-bottom:48px;">
+      <div style="background:#fffbeb;border:1px solid #f59e0b;border-radius:12px;padding:16px;margin-bottom:20px;">
+        <div style="font-size:18px;font-weight:700;color:#f59e0b;margin-bottom:8px;">🧪 TESTING TEAM (2 Students)</div>
+      </div>
+      <div class="features-grid" style="grid-template-columns:1fr;gap:16px;">
+        <div class="feat-card fade-up delay-1">
+          <div class="feat-icon" style="background:#fffbeb;">👨‍💻</div>
+          <div class="feat-title">Student 12 — Functional Testing</div>
+          <div class="feat-desc"><strong>📁 Works across:</strong> Frontend pages, Backend APIs<br><strong>Task:</strong> Test all features, Verify UI + API behavior, Check edge cases</div>
+        </div>
+        <div class="feat-card fade-up delay-2">
+          <div class="feat-icon" style="background:#fffbeb;">👨‍💻</div>
+          <div class="feat-title">Student 13 — Bug Tracking & Regression Testing</div>
+          <div class="feat-desc"><strong>📁 Works with:</strong> Testing reports, All modules<br><strong>Task:</strong> Identify bugs, Retest fixed issues, Ensure stability after changes</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Integration Lead -->
+    <div style="margin-bottom:48px;">
+      <div style="background:#fef2f2;border:1px solid #ef4444;border-radius:12px;padding:16px;margin-bottom:20px;">
+        <div style="font-size:18px;font-weight:700;color:#ef4444;margin-bottom:8px;">🔀 COORDINATION / INTEGRATION (1 Student)</div>
+      </div>
+      <div class="feat-card fade-up delay-1">
+        <div class="feat-icon" style="background:#fef2f2;">👨‍💼</div>
+        <div class="feat-title">Student 14 — Team Lead / Integration</div>
+        <div class="feat-desc"><strong>📁 Oversees all folders</strong><br><strong>Task:</strong> Ensure frontend + backend + database align, Coordinate between teams, Maintain overall structure consistency, Make sure everything integrates smoothly, Guide and review work from all members</div>
+      </div>
+    </div>
+
+    <!-- Connection Flow -->
+    <div style="background:#0f172a;color:#e2e8f0;font-family:'Courier New',monospace;font-size:12px;padding:20px;border-radius:12px;margin-top:32px;">
+      <div style="color:#94a3b8;margin-bottom:12px;">🔗 How Everything Connects</div>
+      <div style="color:#64748b;">Frontend (pages/) → UI screens</div>
+      <div style="color:#64748b;">Frontend (services/) → calls backend APIs</div>
+      <div style="color:#64748b;">Backend (routes/) → API endpoints</div>
+      <div style="color:#64748b;">Backend (controllers/) → logic</div>
+      <div style="color:#64748b;">Backend (models/) → database structure</div>
+      <div style="color:#64748b;">Database (schema/) → data design</div>
+      <div style="margin-top:12px;color:#94a3b8;">💡 Simple Visualization</div>
+      <div style="color:#64748b;">Frontend (UI)</div>
+      <div style="color:#64748b;">   ↓</div>
+      <div style="color:#64748b;">Services (API calls)</div>
+      <div style="color:#64748b;">   ↓</div>
+      <div style="color:#64748b;">Backend Routes → Controllers</div>
+      <div style="color:#64748b;">   ↓</div>
+      <div style="color:#64748b;">Models</div>
+      <div style="color:#64748b;">   ↓</div>
+      <div style="color:#64748b;">Database</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== GIT WORKFLOW ===== -->
+<section class="tech" id="workflow">
+  <div class="container">
+    <div class="section-head fade-up" style="text-align:center;">
+      <span class="section-label">Development Process</span>
+      <h2 class="section-title">UniHub Git Workflow Guideline</h2>
+      <p class="section-sub" style="margin:0 auto;">Team rules and best practices for smooth collaboration using Git and GitHub.</p>
+    </div>
+    
+    <!-- Important Rules -->
+    <div style="background:#fef2f2;border:1px solid #ef4444;border-radius:12px;padding:20px;margin-bottom:32px;">
+      <div style="font-size:18px;font-weight:700;color:#ef4444;margin-bottom:16px;">🚫 Important Rules (MUST FOLLOW)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div style="color:#dc2626;font-weight:600;">❌ Do NOT push to main branch</div>
+        <div style="color:#dc2626;font-weight:600;">❌ Do NOT work directly on main</div>
+        <div style="color:#dc2626;font-weight:600;">❌ Do NOT create branches from main</div>
+        <div style="color:#16a34a;font-weight:600;">✅ Always work on a separate feature branch</div>
+        <div style="color:#16a34a;font-weight:600;">✅ All work must be submitted via Pull Request to dev</div>
+        <div style="color:#16a34a;font-weight:600;">✅ Only the team lead reviews and merges</div>
+      </div>
+    </div>
+
+    <!-- Standard Workflow -->
+    <div style="background:#eff6ff;border:1px solid #3b82f6;border-radius:12px;padding:20px;margin-bottom:32px;">
+      <div style="font-size:18px;font-weight:700;color:#3b82f6;margin-bottom:16px;">🔄 Standard Workflow (Step-by-Step)</div>
+      <div style="background:#0f172a;color:#e2e8f0;font-family:'Courier New',monospace;font-size:11px;padding:16px;border-radius:8px;overflow-x:auto;">
+        <div style="color:#94a3b8;margin-bottom:8px;">1. Clone the repository</div>
+        <div style="color:#64748b;">git clone https://github.com/Naol724/UniHub.git</div>
+        <div style="color:#64748b;">cd UniHub</div>
+        <div style="margin-top:12px;color:#94a3b8;">2. Switch to dev branch</div>
+        <div style="color:#64748b;">git checkout dev</div>
+        <div style="color:#64748b;">git pull origin dev</div>
+        <div style="margin-top:12px;color:#94a3b8;">3. Check current branch (VERY IMPORTANT)</div>
+        <div style="color:#64748b;">Before doing anything, verify your branch:</div>
+        <div style="color:#64748b;">git branch</div>
+        <div style="margin-top:8px;color:#94a3b8;">You should see:</div>
+        <div style="color:#64748b;">* dev</div>
+        <div style="color:#64748b;">  main</div>
+        <div style="margin-top:8px;color:#16a34a;">✅ If not on dev, switch:</div>
+        <div style="color:#64748b;">git checkout dev</div>
+        <div style="margin-top:12px;color:#94a3b8;">4. Create your own branch</div>
+        <div style="color:#64748b;">Use a clear branch name based on your task:</div>
+        <div style="color:#64748b;">git checkout -b feature/your-task-name</div>
+        <div style="margin-top:8px;color:#94a3b8;">Examples:</div>
+        <div style="color:#64748b;">feature/login-ui</div>
+        <div style="color:#64748b;">feature/dashboard</div>
+        <div style="color:#64748b;">feature/auth-api</div>
+        <div style="color:#64748b;">feature/navbar</div>
+        <div style="margin-top:12px;color:#94a3b8;">5. Work only on your branch</div>
+        <div style="color:#64748b;">Edit only your assigned files</div>
+        <div style="color:#64748b;">Do not modify unrelated modules</div>
+        <div style="color:#64748b;">Do not switch branches while working</div>
+        <div style="margin-top:12px;color:#94a3b8;">6. Save your changes (commit)</div>
+        <div style="color:#64748b;">git add .</div>
+        <div style="color:#64748b;">git commit -m "Clear message describing your work"</div>
+        <div style="margin-top:8px;color:#94a3b8;">Example commit messages:</div>
+        <div style="color:#64748b;">"Add login UI page"</div>
+        <div style="color:#64748b;">"Implement authentication API"</div>
+        <div style="color:#64748b;">"Create user model"</div>
+        <div style="margin-top:12px;color:#94a3b8;">7. Push your branch</div>
+        <div style="color:#64748b;">git push origin feature/your-task-name</div>
+        <div style="margin-top:12px;color:#94a3b8;">8. Create a Pull Request (PR)</div>
+        <div style="color:#64748b;">On GitHub:</div>
+        <div style="color:#64748b;">Base branch: dev</div>
+        <div style="color:#64748b;">Compare branch: your feature branch</div>
+        <div style="color:#dc2626;">❗ Important:</div>
+        <div style="color:#64748b;">Always target dev</div>
+        <div style="color:#64748b;">Never create PR to main</div>
+        <div style="margin-top:12px;color:#94a3b8;">9. Review & Merge Process (Handled by Team Lead)</div>
+        <div style="color:#64748b;">The team lead will:</div>
+        <div style="color:#64748b;">Review your code</div>
+        <div style="color:#64748b;">Check for errors</div>
+        <div style="color:#64748b;">Suggest improvements if needed</div>
+        <div style="color:#64748b;">Approve the PR</div>
+        <div style="color:#64748b;">Merge into dev</div>
+      </div>
+    </div>
+
+    <!-- Common Mistakes -->
+    <div style="background:#fffbeb;border:1px solid #f59e0b;border-radius:12px;padding:20px;margin-bottom:32px;">
+      <div style="font-size:18px;font-weight:700;color:#f59e0b;margin-bottom:16px;">🔍 Common Mistakes to Avoid</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div><span style="color:#dc2626;font-weight:600;">❌ Working on main</span></div>
+        <div><span style="color:#dc2626;font-weight:600;">❌ Creating branch from main</span></div>
+        <div><span style="color:#dc2626;font-weight:600;">❌ Pushing without creating a branch</span></div>
+        <div><span style="color:#dc2626;font-weight:600;">❌ Submitting PR to main</span></div>
+        <div><span style="color:#dc2626;font-weight:600;">❌ Editing files outside your task scope</span></div>
+      </div>
+      <div style="margin-top:16px;font-size:16px;font-weight:700;color:#f59e0b;">✅ Best Practices</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+        <div><span style="color:#16a34a;font-weight:600;">✔</span> Always run: <code style="background:#0f172a;color:#67e8f9;padding:2px 6px;border-radius:4px;font-size:11px;">git branch</code> before starting work</div>
+        <div><span style="color:#16a34a;font-weight:600;">✔</span> Pull latest updates before creating a branch</div>
+        <div><span style="color:#16a34a;font-weight:600;">✔</span> Keep your branch focused on ONE task</div>
+        <div><span style="color:#16a34a;font-weight:600;">✔</span> Use clear commit messages</div>
+        <div><span style="color:#16a34a;font-weight:600;">✔</span> Communicate if your work affects others</div>
+      </div>
+    </div>
+
+    <!-- Simple Summary -->
+    <div style="background:#ecfdf5;border:1px solid #10b981;border-radius:12px;padding:20px;">
+      <div style="font-size:18px;font-weight:700;color:#10b981;margin-bottom:16px;">🧠 Simple Workflow Summary</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+        <span style="background:#10b981;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;">Clone</span>
+        <span style="color:#64748b;">→</span>
+        <span style="background:#10b981;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;">Switch to dev</span>
+        <span style="color:#64748b;">→</span>
+        <span style="background:#10b981;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;">Check branch</span>
+        <span style="color:#64748b;">→</span>
+        <span style="background:#10b981;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;">Create feature branch</span>
+        <span style="color:#64748b;">→</span>
+        <span style="background:#10b981;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;">Work</span>
+        <span style="color:#64748b;">→</span>
+        <span style="background:#10b981;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;">Commit</span>
+        <span style="color:#64748b;">→</span>
+        <span style="background:#10b981;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;">Push</span>
+        <span style="color:#64748b;">→</span>
+        <span style="background:#10b981;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;">PR to dev</span>
+        <span style="color:#64748b;">→</span>
+        <span style="background:#10b981;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;">Review</span>
+        <span style="color:#64748b;">→</span>
+        <span style="background:#10b981;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;">Merge</span>
+      </div>
+      
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid #10b981;">
+        <div style="font-size:16px;font-weight:700;color:#10b981;margin-bottom:8px;">👨‍💼 Role Reminder (Team Lead Responsibility)</div>
+        <div style="color:#64748b;line-height:1.6;">As the reviewer and merger, you should:<br/>
+        • Ensure PR is targeting dev<br/>
+        • Check code quality<br/>
+        • Verify no conflicts<br/>
+        • Approve or request changes<br/>
+        • Merge only after successful review<br/>
+        • Reject any PR targeting main</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== MOCKUPS ===== -->
+<section class="mockups" id="mockups">
+  <div class="container">
+    <div class="section-head fade-up" style="text-align:center;">
+      <span class="section-label">Interface Screens</span>
+      <h2 class="section-title">Every Page, Showcased</h2>
+      <p class="section-sub" style="margin:0 auto;">A walkthrough of all seven application screens — from authentication to profile management.</p>
+    </div>
+
+    <!-- ── SCREEN 1: LOGIN ── -->
+    <div class="mockup-item">
+      <div class="mockup-label">Screen 01</div>
+      <div class="mockup-title">Login Page</div>
+      <div class="mockup-desc">Secure entry point with email/password authentication and Google OAuth option. Clean, minimal design that keeps the focus on getting users in quickly.</div>
+      <div class="mockup-frame">
+        <div class="mockup-bar"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div><div class="url-bar">unihub.app/login</div></div>
+        <div class="screen s-auth">
+          <div class="s-auth-card">
+            <div class="s-logo"><div class="s-logo-icon">🎓</div><span class="s-logo-text">UniHub</span></div>
+            <div class="s-title">Welcome back</div>
+            <div class="s-sub">Sign in to your UniHub account</div>
+            <div class="s-label">Email</div>
+            <div class="s-input" style="color:var(--muted);">naol.gonfa@university.edu</div>
+            <div class="s-label">Password</div>
+            <div class="s-input" style="color:var(--muted);">••••••••</div>
+            <div class="s-btn">Sign In</div>
+            <div class="s-divider">or</div>
+            <div class="s-btn-outline">🔵 Continue with Google</div>
+            <div class="s-footer">Don't have an account? <span>Sign up</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCREEN 2: REGISTER ── -->
+    <div class="mockup-item">
+      <div class="mockup-label">Screen 02</div>
+      <div class="mockup-title">Register Page</div>
+      <div class="mockup-desc">New student onboarding with first name, last name, university email, and password. Simple and frictionless sign-up flow.</div>
+      <div class="mockup-frame">
+        <div class="mockup-bar"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div><div class="url-bar">unihub.app/register</div></div>
+        <div class="screen s-auth">
+          <div class="s-auth-card">
+            <div class="s-logo"><div class="s-logo-icon">🎓</div><span class="s-logo-text">UniHub</span></div>
+            <div class="s-title">Create account</div>
+            <div class="s-sub">Join UniHub and start collaborating</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div><div class="s-label">First Name</div><div class="s-input" style="color:var(--muted);">Naol</div></div>
+              <div><div class="s-label">Last Name</div><div class="s-input" style="color:var(--muted);">Gonfa</div></div>
+            </div>
+            <div class="s-label">University Email</div>
+            <div class="s-input" style="color:var(--muted);">naol.gonfa@university.edu</div>
+            <div class="s-label">Password</div>
+            <div class="s-input" style="color:var(--muted);">••••••••</div>
+            <div class="s-btn">Create Account</div>
+            <div class="s-footer">Already have an account? <span>Sign in</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCREEN 3: DASHBOARD ── -->
+    <div class="mockup-item">
+      <div class="mockup-label">Screen 03</div>
+      <div class="mockup-title">Dashboard</div>
+      <div class="mockup-desc">The central hub. Stats cards show task counts, completion rates, and active teams. The activity feed tracks recent team actions, quick-action buttons provide fast access, and upcoming deadlines keep everyone on track.</div>
+      <div class="mockup-frame">
+        <div class="mockup-bar"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div><div class="url-bar">unihub.app/dashboard</div></div>
+        <div class="screen s-shell">
+          <!-- Sidebar -->
+          <div class="s-sidebar">
+            <div class="s-sidebar-logo"><div class="s-logo-icon" style="width:26px;height:26px;font-size:13px;">🎓</div><span style="font-size:14px;font-weight:700;">UniHub</span></div>
+            <div class="s-nav">
+              <div class="s-nav-item active"><div class="s-nav-dot"></div>Dashboard</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Teams</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Tasks</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Messages</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Resources</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Notifications</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Profile</div>
+            </div>
+            <div class="s-sidebar-user"><div class="s-user-row"><div class="s-av">NG</div><div><div class="s-uname">Naol Gonfa</div><div class="s-urole">Computer Science</div></div></div></div>
+          </div>
+          <!-- Content -->
+          <div class="s-content">
+            <div class="s-navbar"><div class="s-search">🔍 Search teams, tasks...</div><div class="s-bell">🔔<div class="s-bell-dot"></div></div><div class="s-av" style="margin-left:8px;">NG</div></div>
+            <div class="s-main">
+              <div class="s-page-title">Welcome back, Naol! 👋</div>
+              <div class="s-page-sub">Here's what's happening with your projects today.</div>
+              <div class="s-grid4">
+                <div class="s-card"><div class="s-stat-label">Total Tasks</div><div class="s-stat-val">24</div><span class="s-stat-badge s-badge-green">+12%</span></div>
+                <div class="s-card"><div class="s-stat-label">Completed</div><div class="s-stat-val">18</div><span class="s-stat-badge s-badge-green">+8%</span></div>
+                <div class="s-card"><div class="s-stat-label">Active Teams</div><div class="s-stat-val">5</div><span class="s-stat-badge s-badge-blue">+2</span></div>
+                <div class="s-card"><div class="s-stat-label">Pending</div><div class="s-stat-val">6</div><span class="s-stat-badge s-badge-red">-3</span></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 180px;gap:10px;">
+                <div class="s-card">
+                  <div class="s-card-title">Recent Activity</div>
+                  <div class="s-activity-item"><div class="s-av sm" style="background:#eff6ff;color:#3b82f6;">NG</div><div><div class="s-act-text"><b>Naol Gonfa</b> completed task <b>Design System Review</b></div><div class="s-act-time">2 min ago · <span class="s-stat-badge s-badge-green" style="font-size:8px;">UI/UX Team</span></div></div></div>
+                  <div class="s-activity-item"><div class="s-av sm" style="background:#f5f3ff;color:#8b5cf6;">AN</div><div><div class="s-act-text"><b>Asefa Niguse</b> commented on <b>API Integration</b></div><div class="s-act-time">15 min ago · <span class="s-stat-badge s-badge-blue" style="font-size:8px;">Backend Team</span></div></div></div>
+                  <div class="s-activity-item"><div class="s-av sm" style="background:#ecfdf5;color:#10b981;">EA</div><div><div class="s-act-text"><b>Ermiyas Abebe</b> uploaded <b>Project_Specs.pdf</b></div><div class="s-act-time">1 hour ago · <span class="s-stat-badge s-badge-purple" style="font-size:8px;">Research Team</span></div></div></div>
+                  <div class="s-activity-item"><div class="s-av sm" style="background:#fffbeb;color:#f59e0b;">TF</div><div><div class="s-act-text"><b>Tola Fayisa</b> created new team <b>Mobile Dev</b></div><div class="s-act-time">2 hours ago</div></div></div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                  <div class="s-card">
+                    <div class="s-card-title">Quick Actions</div>
+                    <div class="s-quick-grid">
+                      <div class="s-quick-btn primary"><div class="s-quick-icon">➕</div>New Task</div>
+                      <div class="s-quick-btn"><div class="s-quick-icon">👥</div>Create Team</div>
+                      <div class="s-quick-btn"><div class="s-quick-icon">📄</div>Upload File</div>
+                      <div class="s-quick-btn"><div class="s-quick-icon">💬</div>Message</div>
+                    </div>
+                  </div>
+                  <div class="s-card">
+                    <div class="s-card-title">Upcoming Deadlines</div>
+                    <div class="s-deadline"><div style="display:flex;justify-content:space-between;"><div><div class="s-dl-title">Database Schema</div><div class="s-dl-team">Backend Team</div></div><span class="s-stat-badge s-badge-red" style="font-size:8px;">high</span></div><div class="s-dl-date">📅 Today</div></div>
+                    <div class="s-deadline"><div style="display:flex;justify-content:space-between;"><div><div class="s-dl-title">User Testing</div><div class="s-dl-team">UI/UX Team</div></div><span class="s-stat-badge s-badge-yellow" style="font-size:8px;">med</span></div><div class="s-dl-date">📅 Tomorrow</div></div>
+                    <div class="s-deadline"><div style="display:flex;justify-content:space-between;"><div><div class="s-dl-title">Final Presentation</div><div class="s-dl-team">Research Team</div></div><span class="s-stat-badge s-badge-red" style="font-size:8px;">high</span></div><div class="s-dl-date">📅 Apr 12</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCREEN 4: TEAMS ── -->
+    <div class="mockup-item">
+      <div class="mockup-label">Screen 04</div>
+      <div class="mockup-title">Teams Page</div>
+      <div class="mockup-desc">All project teams displayed as cards with member avatars, task progress bars, and role information. Leaders can create new teams and invite members via shareable links.</div>
+      <div class="mockup-frame">
+        <div class="mockup-bar"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div><div class="url-bar">unihub.app/teams</div></div>
+        <div class="screen s-shell">
+          <div class="s-sidebar">
+            <div class="s-sidebar-logo"><div class="s-logo-icon" style="width:26px;height:26px;font-size:13px;">🎓</div><span style="font-size:14px;font-weight:700;">UniHub</span></div>
+            <div class="s-nav">
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Dashboard</div>
+              <div class="s-nav-item active"><div class="s-nav-dot"></div>Teams</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Tasks</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Messages</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Resources</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Notifications</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Profile</div>
+            </div>
+            <div class="s-sidebar-user"><div class="s-user-row"><div class="s-av">NG</div><div><div class="s-uname">Naol Gonfa</div><div class="s-urole">Computer Science</div></div></div></div>
+          </div>
+          <div class="s-content">
+            <div class="s-navbar"><div class="s-search">🔍 Search...</div><div class="s-bell">🔔<div class="s-bell-dot"></div></div><div class="s-av" style="margin-left:8px;">NG</div></div>
+            <div class="s-main">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;"><div><div class="s-page-title">Teams</div><div class="s-page-sub">Manage and collaborate with your project teams</div></div><div style="background:#3b82f6;color:#fff;font-size:10px;font-weight:600;padding:6px 12px;border-radius:8px;">+ Create Team</div></div>
+              <div class="s-grid3">
+                <div class="s-team-card"><div class="s-team-icon" style="background:#3b82f6;">UI</div><div class="s-team-name">UI/UX Design Team</div><div class="s-team-desc">Designing beautiful user experiences</div><div class="s-members"><div class="s-mav">NG</div><div class="s-mav">AN</div><div class="s-mav">EA</div><div class="s-mav">TF</div></div><div class="s-progress-bar"><div class="s-progress-fill" style="width:67%;background:#3b82f6;"></div></div><div style="display:flex;justify-content:space-between;margin-top:8px;font-size:9px;color:var(--muted);"><span>8/12 tasks</span><span class="s-stat-badge s-badge-blue">4 members</span></div></div>
+                <div class="s-team-card"><div class="s-team-icon" style="background:#8b5cf6;">BE</div><div class="s-team-name">Backend Development</div><div class="s-team-desc">Building robust APIs and databases</div><div class="s-members"><div class="s-mav" style="background:#f5f3ff;color:#8b5cf6;">FB</div><div class="s-mav" style="background:#f5f3ff;color:#8b5cf6;">YG</div><div class="s-mav" style="background:#f5f3ff;color:#8b5cf6;">AA</div></div><div class="s-progress-bar"><div class="s-progress-fill" style="width:78%;background:#8b5cf6;"></div></div><div style="display:flex;justify-content:space-between;margin-top:8px;font-size:9px;color:var(--muted);"><span>14/18 tasks</span><span class="s-stat-badge s-badge-purple">3 members</span></div></div>
+                <div class="s-team-card"><div class="s-team-icon" style="background:#10b981;">RE</div><div class="s-team-name">Research & Analysis</div><div class="s-team-desc">User research and data analysis</div><div class="s-members"><div class="s-mav" style="background:#ecfdf5;color:#10b981;">MN</div><div class="s-mav" style="background:#ecfdf5;color:#10b981;">MI</div></div><div class="s-progress-bar"><div class="s-progress-fill" style="width:67%;background:#10b981;"></div></div><div style="display:flex;justify-content:space-between;margin-top:8px;font-size:9px;color:var(--muted);"><span>4/6 tasks</span><span class="s-stat-badge s-badge-green">2 members</span></div></div>
+                <div class="s-team-card"><div class="s-team-icon" style="background:#f59e0b;">MD</div><div class="s-team-name">Mobile Development</div><div class="s-team-desc">Cross-platform mobile applications</div><div class="s-members"><div class="s-mav" style="background:#fffbeb;color:#f59e0b;">BE</div><div class="s-mav" style="background:#fffbeb;color:#f59e0b;">RS</div><div class="s-mav" style="background:#fffbeb;color:#f59e0b;">BM</div></div><div class="s-progress-bar"><div class="s-progress-fill" style="width:60%;background:#f59e0b;"></div></div><div style="display:flex;justify-content:space-between;margin-top:8px;font-size:9px;color:var(--muted);"><span>9/15 tasks</span><span class="s-stat-badge s-badge-yellow">5 members</span></div></div>
+                <div class="s-team-card"><div class="s-team-icon" style="background:#ef4444;">DO</div><div class="s-team-name">DevOps & Infrastructure</div><div class="s-team-desc">Deployment pipelines and cloud</div><div class="s-members"><div class="s-mav" style="background:#fef2f2;color:#ef4444;">AN</div><div class="s-mav" style="background:#fef2f2;color:#ef4444;">EA</div></div><div class="s-progress-bar"><div class="s-progress-fill" style="width:88%;background:#ef4444;"></div></div><div style="display:flex;justify-content:space-between;margin-top:8px;font-size:9px;color:var(--muted);"><span>7/8 tasks</span><span class="s-stat-badge s-badge-red">2 members</span></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCREEN 5: TASKS ── -->
+    <div class="mockup-item">
+      <div class="mockup-label">Screen 05</div>
+      <div class="mockup-title">Tasks — Kanban Board</div>
+      <div class="mockup-desc">A Mini Jira-style Kanban board with three columns: To Do, In Progress, and Done. Tasks show priority badges, team labels, and due dates. Drag-and-drop ready for real-world workflow simulation.</div>
+      <div class="mockup-frame">
+        <div class="mockup-bar"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div><div class="url-bar">unihub.app/tasks</div></div>
+        <div class="screen s-shell">
+          <div class="s-sidebar">
+            <div class="s-sidebar-logo"><div class="s-logo-icon" style="width:26px;height:26px;font-size:13px;">🎓</div><span style="font-size:14px;font-weight:700;">UniHub</span></div>
+            <div class="s-nav">
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Dashboard</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Teams</div>
+              <div class="s-nav-item active"><div class="s-nav-dot"></div>Tasks</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Messages</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Resources</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Notifications</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Profile</div>
+            </div>
+            <div class="s-sidebar-user"><div class="s-user-row"><div class="s-av">NG</div><div><div class="s-uname">Naol Gonfa</div><div class="s-urole">Computer Science</div></div></div></div>
+          </div>
+          <div class="s-content">
+            <div class="s-navbar"><div class="s-search">🔍 Search...</div><div class="s-bell">🔔<div class="s-bell-dot"></div></div><div class="s-av" style="margin-left:8px;">NG</div></div>
+            <div class="s-main">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;"><div><div class="s-page-title">Tasks</div><div class="s-page-sub">Organize and track your project tasks</div></div><div style="display:flex;gap:6px;"><div style="border:1px solid var(--border);font-size:10px;padding:5px 10px;border-radius:7px;">🔽 Filter</div><div style="background:#3b82f6;color:#fff;font-size:10px;font-weight:600;padding:5px 10px;border-radius:7px;">+ Add Task</div></div></div>
+              <div class="s-kanban">
+                <div class="s-col">
+                  <div class="s-col-header"><div class="s-col-dot" style="background:#64748b;"></div>To Do <span style="background:var(--border);color:var(--muted);font-size:9px;padding:1px 6px;border-radius:999px;">3</span></div>
+                  <div class="s-task"><div class="s-task-title">Design System Documentation</div><div class="s-task-meta"><span>UI/UX Team</span><span class="s-stat-badge s-badge-red" style="font-size:8px;">high</span></div><div style="font-size:9px;color:var(--muted);margin-top:4px;">📅 Apr 10</div></div>
+                  <div class="s-task"><div class="s-task-title">Set Up CI/CD Pipeline</div><div class="s-task-meta"><span>DevOps Team</span><span class="s-stat-badge s-badge-yellow" style="font-size:8px;">med</span></div><div style="font-size:9px;color:var(--muted);margin-top:4px;">📅 Apr 14</div></div>
+                  <div class="s-task"><div class="s-task-title">Write Unit Tests</div><div class="s-task-meta"><span>Backend Team</span><span class="s-stat-badge s-badge-green" style="font-size:8px;">low</span></div><div style="font-size:9px;color:var(--muted);margin-top:4px;">📅 Apr 16</div></div>
+                </div>
+                <div class="s-col">
+                  <div class="s-col-header"><div class="s-col-dot" style="background:#3b82f6;"></div>In Progress <span style="background:var(--border);color:var(--muted);font-size:9px;padding:1px 6px;border-radius:999px;">3</span></div>
+                  <div class="s-task" style="border-left:2px solid #3b82f6;"><div class="s-task-title">API Integration</div><div class="s-task-meta"><span>Backend Team</span><span class="s-stat-badge s-badge-red" style="font-size:8px;">high</span></div><div style="font-size:9px;color:var(--muted);margin-top:4px;">📅 Today</div></div>
+                  <div class="s-task" style="border-left:2px solid #3b82f6;"><div class="s-task-title">Dashboard Redesign</div><div class="s-task-meta"><span>UI/UX Team</span><span class="s-stat-badge s-badge-yellow" style="font-size:8px;">med</span></div><div style="font-size:9px;color:var(--muted);margin-top:4px;">📅 Tomorrow</div></div>
+                  <div class="s-task" style="border-left:2px solid #3b82f6;"><div class="s-task-title">User Research Survey</div><div class="s-task-meta"><span>Research Team</span><span class="s-stat-badge s-badge-green" style="font-size:8px;">low</span></div><div style="font-size:9px;color:var(--muted);margin-top:4px;">📅 Apr 11</div></div>
+                </div>
+                <div class="s-col">
+                  <div class="s-col-header"><div class="s-col-dot" style="background:#10b981;"></div>Done <span style="background:var(--border);color:var(--muted);font-size:9px;padding:1px 6px;border-radius:999px;">3</span></div>
+                  <div class="s-task" style="opacity:.65;"><div class="s-task-title" style="text-decoration:line-through;color:var(--muted);">Project Setup</div><div style="font-size:9px;color:#10b981;margin-top:4px;">✓ Completed</div></div>
+                  <div class="s-task" style="opacity:.65;"><div class="s-task-title" style="text-decoration:line-through;color:var(--muted);">Database Schema Design</div><div style="font-size:9px;color:#10b981;margin-top:4px;">✓ Completed</div></div>
+                  <div class="s-task" style="opacity:.65;"><div class="s-task-title" style="text-decoration:line-through;color:var(--muted);">Wireframes</div><div style="font-size:9px;color:#10b981;margin-top:4px;">✓ Completed</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCREEN 6: MESSAGES ── -->
+    <div class="mockup-item">
+      <div class="mockup-label">Screen 06</div>
+      <div class="mockup-title">Messages</div>
+      <div class="mockup-desc">Real-time team chat and direct messaging. The left panel lists all conversations with unread counts. The right panel shows the active chat thread with message bubbles, timestamps, and a message input.</div>
+      <div class="mockup-frame">
+        <div class="mockup-bar"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div><div class="url-bar">unihub.app/messages</div></div>
+        <div class="screen s-shell">
+          <div class="s-sidebar">
+            <div class="s-sidebar-logo"><div class="s-logo-icon" style="width:26px;height:26px;font-size:13px;">🎓</div><span style="font-size:14px;font-weight:700;">UniHub</span></div>
+            <div class="s-nav">
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Dashboard</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Teams</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Tasks</div>
+              <div class="s-nav-item active"><div class="s-nav-dot"></div>Messages</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Resources</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Notifications</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Profile</div>
+            </div>
+            <div class="s-sidebar-user"><div class="s-user-row"><div class="s-av">NG</div><div><div class="s-uname">Naol Gonfa</div><div class="s-urole">Computer Science</div></div></div></div>
+          </div>
+          <div class="s-content">
+            <div class="s-navbar"><div class="s-search">🔍 Search...</div><div class="s-bell">🔔<div class="s-bell-dot"></div></div><div class="s-av" style="margin-left:8px;">NG</div></div>
+            <div class="s-main" style="padding:12px;">
+              <div class="s-msg-layout">
+                <div class="s-chat-list">
+                  <div class="s-chat-list-hdr">Conversations</div>
+                  <div class="s-chat-item active"><div class="s-av sm" style="background:#eff6ff;color:#3b82f6;">UI</div><div><div class="s-chat-name">UI/UX Team</div><div class="s-chat-last">Great work on designs!</div></div><span class="s-stat-badge s-badge-blue" style="font-size:8px;margin-left:auto;">3</span></div>
+                  <div class="s-chat-item"><div class="s-av sm">NG</div><div><div class="s-chat-name">Naol Gonfa</div><div class="s-chat-last">Can you review mockups?</div></div><span class="s-stat-badge s-badge-blue" style="font-size:8px;margin-left:auto;">1</span></div>
+                  <div class="s-chat-item"><div class="s-av sm" style="background:#f5f3ff;color:#8b5cf6;">BE</div><div><div class="s-chat-name">Backend Team</div><div class="s-chat-last">API endpoints ready</div></div></div>
+                  <div class="s-chat-item"><div class="s-av sm" style="background:#f5f3ff;color:#8b5cf6;">AN</div><div><div class="s-chat-name">Asefa Niguse</div><div class="s-chat-last">Thanks for the help!</div></div></div>
+                  <div class="s-chat-item"><div class="s-av sm" style="background:#ecfdf5;color:#10b981;">RT</div><div><div class="s-chat-name">Research Team</div><div class="s-chat-last">Survey results are in</div></div><span class="s-stat-badge s-badge-blue" style="font-size:8px;margin-left:auto;">5</span></div>
+                </div>
+                <div class="s-chat-panel">
+                  <div class="s-chat-hdr"><div class="s-av sm" style="background:#eff6ff;color:#3b82f6;">UI</div><div><div class="s-chat-hdr-name">UI/UX Team</div><div style="font-size:9px;color:var(--muted);">4 members · Online</div></div></div>
+                  <div class="s-messages">
+                    <div class="s-msg received"><div class="s-av sm">NG</div><div><div style="font-size:9px;font-weight:600;color:var(--muted);margin-bottom:3px;">Naol Gonfa</div><div class="s-bubble">Hey team! Just finished the new dashboard designs. Let me know what you think!</div><div style="font-size:9px;color:var(--muted);margin-top:3px;">10:30 AM</div></div></div>
+                    <div class="s-msg sent"><div class="s-av sm">ME</div><div><div class="s-bubble">These look amazing! Love the color scheme and layout.</div><div style="font-size:9px;color:var(--muted);margin-top:3px;text-align:right;">10:32 AM</div></div></div>
+                    <div class="s-msg received"><div class="s-av sm" style="background:#f5f3ff;color:#8b5cf6;">AN</div><div><div style="font-size:9px;font-weight:600;color:var(--muted);margin-bottom:3px;">Asefa Niguse</div><div class="s-bubble">Great work! Should we add hover states for the activity feed?</div><div style="font-size:9px;color:var(--muted);margin-top:3px;">10:35 AM</div></div></div>
+                    <div class="s-msg sent"><div class="s-av sm">ME</div><div><div class="s-bubble">Good point! A subtle background change on hover would work great.</div><div style="font-size:9px;color:var(--muted);margin-top:3px;text-align:right;">10:38 AM</div></div></div>
+                  </div>
+                  <div class="s-chat-input"><div class="s-input-box">Type a message...</div><div class="s-send-btn">Send ➤</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCREEN 7: RESOURCES ── -->
+    <div class="mockup-item">
+      <div class="mockup-label">Screen 07</div>
+      <div class="mockup-title">Resources</div>
+      <div class="mockup-desc">Shared file library organized by team. Supports PDFs, spreadsheets, design files, code files, and documents. Search and filter make finding files fast. Upload via multer with drag-and-drop support.</div>
+      <div class="mockup-frame">
+        <div class="mockup-bar"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div><div class="url-bar">unihub.app/resources</div></div>
+        <div class="screen s-shell">
+          <div class="s-sidebar">
+            <div class="s-sidebar-logo"><div class="s-logo-icon" style="width:26px;height:26px;font-size:13px;">🎓</div><span style="font-size:14px;font-weight:700;">UniHub</span></div>
+            <div class="s-nav">
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Dashboard</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Teams</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Tasks</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Messages</div>
+              <div class="s-nav-item active"><div class="s-nav-dot"></div>Resources</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Notifications</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Profile</div>
+            </div>
+            <div class="s-sidebar-user"><div class="s-user-row"><div class="s-av">NG</div><div><div class="s-uname">Naol Gonfa</div><div class="s-urole">Computer Science</div></div></div></div>
+          </div>
+          <div class="s-content">
+            <div class="s-navbar"><div class="s-search">🔍 Search files...</div><div class="s-bell">🔔<div class="s-bell-dot"></div></div><div class="s-av" style="margin-left:8px;">NG</div></div>
+            <div class="s-main">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;"><div><div class="s-page-title">Resources</div><div class="s-page-sub">Shared files and documents for your projects</div></div><div style="background:#3b82f6;color:#fff;font-size:10px;font-weight:600;padding:5px 10px;border-radius:7px;">⬆ Upload File</div></div>
+              <div class="s-res-grid">
+                <div class="s-res-card"><div class="s-res-icon">📄</div><div class="s-res-name">Project Proposal.pdf</div><div class="s-res-meta">2.4 MB · Apr 5</div><div style="margin-top:6px;"><span class="s-stat-badge s-badge-blue" style="font-size:8px;">UI/UX Team</span></div></div>
+                <div class="s-res-card"><div class="s-res-icon">💾</div><div class="s-res-name">Database Schema.sql</div><div class="s-res-meta">156 KB · Apr 4</div><div style="margin-top:6px;"><span class="s-stat-badge s-badge-purple" style="font-size:8px;">Backend Team</span></div></div>
+                <div class="s-res-card"><div class="s-res-icon">📊</div><div class="s-res-name">User Research.xlsx</div><div class="s-res-meta">1.8 MB · Apr 3</div><div style="margin-top:6px;"><span class="s-stat-badge s-badge-green" style="font-size:8px;">Research Team</span></div></div>
+                <div class="s-res-card"><div class="s-res-icon">🎨</div><div class="s-res-name">Dashboard Mockups.fig</div><div class="s-res-meta">45.2 MB · Apr 2</div><div style="margin-top:6px;"><span class="s-stat-badge s-badge-blue" style="font-size:8px;">UI/UX Team</span></div></div>
+                <div class="s-res-card"><div class="s-res-icon">📝</div><div class="s-res-name">API Documentation.md</div><div class="s-res-meta">89 KB · Apr 1</div><div style="margin-top:6px;"><span class="s-stat-badge s-badge-purple" style="font-size:8px;">Backend Team</span></div></div>
+                <div class="s-res-card"><div class="s-res-icon">📋</div><div class="s-res-name">Meeting Notes.docx</div><div class="s-res-meta">234 KB · Mar 30</div><div style="margin-top:6px;"><span class="s-stat-badge s-badge-green" style="font-size:8px;">Research Team</span></div></div>
+                <div class="s-res-card"><div class="s-res-icon">📄</div><div class="s-res-name">Brand Guidelines.pdf</div><div class="s-res-meta">12.5 MB · Mar 28</div><div style="margin-top:6px;"><span class="s-stat-badge s-badge-blue" style="font-size:8px;">UI/UX Team</span></div></div>
+                <div class="s-res-card"><div class="s-res-icon">📊</div><div class="s-res-name">Sprint Backlog.csv</div><div class="s-res-meta">67 KB · Mar 25</div><div style="margin-top:6px;"><span class="s-stat-badge s-badge-purple" style="font-size:8px;">Backend Team</span></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCREEN 8: NOTIFICATIONS ── -->
+    <div class="mockup-item">
+      <div class="mockup-label">Screen 08</div>
+      <div class="mockup-title">Notifications</div>
+      <div class="mockup-desc">Real-time notification center with unread/read states. Covers task assignments, new messages, team invitations, file shares, deadline reminders, and mentions — all with timestamps and type icons.</div>
+      <div class="mockup-frame">
+        <div class="mockup-bar"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div><div class="url-bar">unihub.app/notifications</div></div>
+        <div class="screen s-shell">
+          <div class="s-sidebar">
+            <div class="s-sidebar-logo"><div class="s-logo-icon" style="width:26px;height:26px;font-size:13px;">🎓</div><span style="font-size:14px;font-weight:700;">UniHub</span></div>
+            <div class="s-nav">
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Dashboard</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Teams</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Tasks</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Messages</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Resources</div>
+              <div class="s-nav-item active"><div class="s-nav-dot"></div>Notifications</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Profile</div>
+            </div>
+            <div class="s-sidebar-user"><div class="s-user-row"><div class="s-av">NG</div><div><div class="s-uname">Naol Gonfa</div><div class="s-urole">Computer Science</div></div></div></div>
+          </div>
+          <div class="s-content">
+            <div class="s-navbar"><div class="s-search">🔍 Search...</div><div class="s-bell">🔔<div class="s-bell-dot"></div></div><div class="s-av" style="margin-left:8px;">NG</div></div>
+            <div class="s-main">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;"><div><div class="s-page-title">Notifications</div><div class="s-page-sub">You have 3 unread notifications</div></div><div style="border:1px solid var(--border);font-size:10px;padding:5px 10px;border-radius:7px;">✓ Mark all as read</div></div>
+              <div class="s-notif unread"><div class="s-notif-icon" style="background:#ecfdf5;">✅</div><div><div class="s-notif-title">Task Assigned <span class="s-stat-badge" style="background:#3b82f6;color:#fff;font-size:8px;">New</span></div><div class="s-notif-msg">Naol Gonfa assigned you: Design System Documentation</div><div class="s-notif-time">2 min ago</div></div></div>
+              <div class="s-notif unread"><div class="s-notif-icon" style="background:#eff6ff;">💬</div><div><div class="s-notif-title">New Message <span class="s-stat-badge" style="background:#3b82f6;color:#fff;font-size:8px;">New</span></div><div class="s-notif-msg">Asefa Niguse sent a message in UI/UX Team chat</div><div class="s-notif-time">15 min ago</div></div></div>
+              <div class="s-notif unread"><div class="s-notif-icon" style="background:#f5f3ff;">👥</div><div><div class="s-notif-title">Team Invitation <span class="s-stat-badge" style="background:#3b82f6;color:#fff;font-size:8px;">New</span></div><div class="s-notif-msg">You've been invited to join Mobile Development team</div><div class="s-notif-time">1 hour ago</div></div></div>
+              <div class="s-notif"><div class="s-notif-icon" style="background:#fffbeb;">📁</div><div><div class="s-notif-title">File Shared</div><div class="s-notif-msg">Ermiyas Abebe shared Project_Specs.pdf with Research Team</div><div class="s-notif-time">2 hours ago</div></div></div>
+              <div class="s-notif"><div class="s-notif-icon" style="background:#fef2f2;">⚠️</div><div><div class="s-notif-title">Deadline Reminder</div><div class="s-notif-msg">Database Schema Design is due today</div><div class="s-notif-time">3 hours ago</div></div></div>
+              <div class="s-notif"><div class="s-notif-icon" style="background:#ecfdf5;">✅</div><div><div class="s-notif-title">Task Completed</div><div class="s-notif-msg">Yisiyaq Gezehany completed: Project Setup</div><div class="s-notif-time">5 hours ago</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCREEN 9: PROFILE ── -->
+    <div class="mockup-item">
+      <div class="mockup-label">Screen 09</div>
+      <div class="mockup-title">Profile Page</div>
+      <div class="mockup-desc">Personal profile with editable fields, skill tags, team memberships, and contact information. Stats show total tasks, teams joined, and completed work. Avatar upload supported.</div>
+      <div class="mockup-frame">
+        <div class="mockup-bar"><div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div><div class="url-bar">unihub.app/profile</div></div>
+        <div class="screen s-shell">
+          <div class="s-sidebar">
+            <div class="s-sidebar-logo"><div class="s-logo-icon" style="width:26px;height:26px;font-size:13px;">🎓</div><span style="font-size:14px;font-weight:700;">UniHub</span></div>
+            <div class="s-nav">
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Dashboard</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Teams</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Tasks</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Messages</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Resources</div>
+              <div class="s-nav-item"><div class="s-nav-dot"></div>Notifications</div>
+              <div class="s-nav-item active"><div class="s-nav-dot"></div>Profile</div>
+            </div>
+            <div class="s-sidebar-user"><div class="s-user-row"><div class="s-av">NG</div><div><div class="s-uname">Naol Gonfa</div><div class="s-urole">Computer Science</div></div></div></div>
+          </div>
+          <div class="s-content">
+            <div class="s-navbar"><div class="s-search">🔍 Search...</div><div class="s-bell">🔔<div class="s-bell-dot"></div></div><div class="s-av" style="margin-left:8px;">NG</div></div>
+            <div class="s-main">
+              <div class="s-page-title" style="margin-bottom:14px;">Profile</div>
+              <div class="s-profile-layout">
+                <div class="s-profile-card">
+                  <div class="s-av lg" style="margin:0 auto;">NG</div>
+                  <div class="s-profile-name">Naol Gonfa</div>
+                  <div class="s-profile-role">Computer Science Student</div>
+                  <div class="s-profile-stats">
+                    <div><div class="s-pstat-val">24</div><div class="s-pstat-label">Tasks</div></div>
+                    <div><div class="s-pstat-val">3</div><div class="s-pstat-label">Teams</div></div>
+                    <div><div class="s-pstat-val">18</div><div class="s-pstat-label">Done</div></div>
+                  </div>
+                  <div class="s-contact-item">✉️ naol.gonfa@university.edu</div>
+                  <div class="s-contact-item">📞 +251 91 234-5678</div>
+                  <div class="s-contact-item">📍 Addis Ababa, Ethiopia</div>
+                  <div class="s-contact-item">📅 Joined Jan 2024</div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                  <div class="s-card">
+                    <div class="s-card-title">Edit Profile</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                      <div><div style="font-size:9px;font-weight:600;margin-bottom:3px;">First Name</div><div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:10px;color:var(--text);">Naol</div></div>
+                      <div><div style="font-size:9px;font-weight:600;margin-bottom:3px;">Last Name</div><div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:10px;color:var(--text);">Gonfa</div></div>
+                    </div>
+                    <div style="font-size:9px;font-weight:600;margin-bottom:3px;">Email</div>
+                    <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:10px;color:var(--muted);margin-bottom:8px;">naol.gonfa@university.edu</div>
+                    <div style="font-size:9px;font-weight:600;margin-bottom:3px;">Bio</div>
+                    <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:10px;color:var(--muted);line-height:1.5;">Computer Science student passionate about building great user experiences...</div>
+                  </div>
+                  <div class="s-card">
+                    <div class="s-card-title">Skills</div>
+                    <div><span class="s-skill">React</span><span class="s-skill">TypeScript</span><span class="s-skill">Node.js</span><span class="s-skill">UI/UX Design</span><span class="s-skill">Python</span><span class="s-skill">Database Design</span><span class="s-skill">Agile</span><span class="s-skill">Git</span></div>
+                  </div>
+                  <div class="s-card">
+                    <div class="s-card-title">Teams</div>
+                    <div style="display:flex;align-items:center;gap:8px;padding:7px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;"><div style="width:28px;height:28px;border-radius:7px;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;">UI</div><div><div style="font-size:10px;font-weight:600;">UI/UX Team</div><div style="font-size:9px;color:var(--muted);">Member</div></div></div>
+                    <div style="display:flex;align-items:center;gap:8px;padding:7px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;"><div style="width:28px;height:28px;border-radius:7px;background:#8b5cf6;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;">BE</div><div><div style="font-size:10px;font-weight:600;">Backend Team</div><div style="font-size:9px;color:var(--muted);">Lead</div></div></div>
+                    <div style="display:flex;align-items:center;gap:8px;padding:7px;border:1px solid var(--border);border-radius:8px;"><div style="width:28px;height:28px;border-radius:7px;background:#10b981;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;">RE</div><div><div style="font-size:10px;font-weight:600;">Research Team</div><div style="font-size:9px;color:var(--muted);">Member</div></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /container -->
+</section>
+
+<!-- ===== CODEBASE SECTION ===== -->
+<section class="codebase" id="codebase">
+  <div class="container">
+    <div class="section-head fade-up" style="text-align:center;">
+      <span class="section-label">Source Code</span>
+      <h2 class="section-title">Folder Structure &amp; Files</h2>
+      <p class="section-sub" style="margin:0 auto;">Every file in the project — browse the tree on the left, click a tab to read the source code on the right.</p>
+    </div>
+    <div class="fs-wrap">
+
+      <!-- ── TREE ── -->
+      <div class="tree-box">
+        <div class="tree-bar">
+          <div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div>
+          <span>unihub/</span>
+        </div>
+        <div class="tree-body" id="fileTree">
+          <div class="tree-line" onclick="showFile('pkg')"><span class="tree-icon">📦</span><span class="tree-name json">package.json</span></div>
+          <div class="tree-line" onclick="showFile('next-cfg')"><span class="tree-icon">⚙️</span><span class="tree-name config">next.config.mjs</span></div>
+          <div class="tree-line" onclick="showFile('tsconfig')"><span class="tree-icon">⚙️</span><span class="tree-name config">tsconfig.json</span></div>
+          <div class="tree-line" onclick="showFile('postcss')"><span class="tree-icon">⚙️</span><span class="tree-name config">postcss.config.mjs</span></div>
+          <div class="tree-line" onclick="showFile('components-json')"><span class="tree-icon">⚙️</span><span class="tree-name json">components.json</span></div>
+          <!-- app/ -->
+          <div class="tree-line" style="margin-top:6px;"><span class="tree-icon">📁</span><span class="tree-name folder">app/</span></div>
+          <div class="tree-line" onclick="showFile('globals-css')"><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">🎨</span><span class="tree-name css">globals.css</span></div>
+          <div class="tree-line" onclick="showFile('layout')"><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📄</span><span class="tree-name ts">layout.tsx</span></div>
+          <div class="tree-line" onclick="showFile('page')"><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📄</span><span class="tree-name ts">page.tsx</span></div>
+          <div class="tree-line"><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📁</span><span class="tree-name folder">login/</span></div>
+          <div class="tree-line" onclick="showFile('login')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">└─</span><span class="tree-icon">📄</span><span class="tree-name ts">page.tsx</span></div>
+          <div class="tree-line"><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📁</span><span class="tree-name folder">register/</span></div>
+          <div class="tree-line" onclick="showFile('register')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">└─</span><span class="tree-icon">📄</span><span class="tree-name ts">page.tsx</span></div>
+          <div class="tree-line"><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📁</span><span class="tree-name folder">tasks/</span></div>
+          <div class="tree-line" onclick="showFile('tasks-page')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">└─</span><span class="tree-icon">📄</span><span class="tree-name ts">page.tsx</span></div>
+          <div class="tree-line"><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📁</span><span class="tree-name folder">teams/</span></div>
+          <div class="tree-line" onclick="showFile('teams-page')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">└─</span><span class="tree-icon">📄</span><span class="tree-name ts">page.tsx</span></div>
+          <div class="tree-line"><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📁</span><span class="tree-name folder">messages/</span></div>
+          <div class="tree-line" onclick="showFile('messages-page')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">└─</span><span class="tree-icon">📄</span><span class="tree-name ts">page.tsx</span></div>
+          <div class="tree-line"><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📁</span><span class="tree-name folder">resources/</span></div>
+          <div class="tree-line" onclick="showFile('resources-page')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">└─</span><span class="tree-icon">📄</span><span class="tree-name ts">page.tsx</span></div>
+          <div class="tree-line"><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📁</span><span class="tree-name folder">notifications/</span></div>
+          <div class="tree-line" onclick="showFile('notif-page')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">└─</span><span class="tree-icon">📄</span><span class="tree-name ts">page.tsx</span></div>
+          <div class="tree-line"><span class="tree-indent"></span><span class="tree-connector">└─</span><span class="tree-icon">📁</span><span class="tree-name folder">profile/</span></div>
+          <div class="tree-line" onclick="showFile('profile-page')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">└─</span><span class="tree-icon">📄</span><span class="tree-name ts">page.tsx</span></div>
+          <!-- components/ -->
+          <div class="tree-line" style="margin-top:6px;"><span class="tree-icon">📁</span><span class="tree-name folder">components/</span></div>
+          <div class="tree-line"><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📁</span><span class="tree-name folder">layout/</span></div>
+          <div class="tree-line" onclick="showFile('app-shell')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📄</span><span class="tree-name ts">app-shell.tsx</span></div>
+          <div class="tree-line" onclick="showFile('navbar')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📄</span><span class="tree-name ts">navbar.tsx</span></div>
+          <div class="tree-line" onclick="showFile('sidebar')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">└─</span><span class="tree-icon">📄</span><span class="tree-name ts">sidebar.tsx</span></div>
+          <div class="tree-line"><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📁</span><span class="tree-name folder">dashboard/</span></div>
+          <div class="tree-line" onclick="showFile('dash-content')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📄</span><span class="tree-name ts">dashboard-content.tsx</span></div>
+          <div class="tree-line" onclick="showFile('stats-card')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📄</span><span class="tree-name ts">stats-card.tsx</span></div>
+          <div class="tree-line" onclick="showFile('activity-feed')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📄</span><span class="tree-name ts">activity-feed.tsx</span></div>
+          <div class="tree-line" onclick="showFile('quick-actions')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📄</span><span class="tree-name ts">quick-actions.tsx</span></div>
+          <div class="tree-line" onclick="showFile('deadlines')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">└─</span><span class="tree-icon">📄</span><span class="tree-name ts">upcoming-deadlines.tsx</span></div>
+          <div class="tree-line"><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📁</span><span class="tree-name folder">tasks/</span></div>
+          <div class="tree-line" onclick="showFile('kanban-board')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📄</span><span class="tree-name ts">kanban-board.tsx</span></div>
+          <div class="tree-line" onclick="showFile('kanban-col')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📄</span><span class="tree-name ts">kanban-column.tsx</span></div>
+          <div class="tree-line" onclick="showFile('task-card')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📄</span><span class="tree-name ts">task-card.tsx</span></div>
+          <div class="tree-line" onclick="showFile('tasks-content')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📄</span><span class="tree-name ts">tasks-content.tsx</span></div>
+          <div class="tree-line" onclick="showFile('create-task')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">└─</span><span class="tree-icon">📄</span><span class="tree-name ts">create-task-dialog.tsx</span></div>
+          <div class="tree-line"><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📁</span><span class="tree-name folder">teams/</span></div>
+          <div class="tree-line" onclick="showFile('teams-content')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📄</span><span class="tree-name ts">teams-content.tsx</span></div>
+          <div class="tree-line" onclick="showFile('team-card')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📄</span><span class="tree-name ts">team-card.tsx</span></div>
+          <div class="tree-line" onclick="showFile('create-team')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">└─</span><span class="tree-icon">📄</span><span class="tree-name ts">create-team-dialog.tsx</span></div>
+          <div class="tree-line"><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📁</span><span class="tree-name folder">messages/</span></div>
+          <div class="tree-line" onclick="showFile('messages-content')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📄</span><span class="tree-name ts">messages-content.tsx</span></div>
+          <div class="tree-line" onclick="showFile('chat-list')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📄</span><span class="tree-name ts">chat-list.tsx</span></div>
+          <div class="tree-line" onclick="showFile('chat-panel')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">└─</span><span class="tree-icon">📄</span><span class="tree-name ts">chat-panel.tsx</span></div>
+          <div class="tree-line"><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📁</span><span class="tree-name folder">resources/</span></div>
+          <div class="tree-line" onclick="showFile('resources-content')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📄</span><span class="tree-name ts">resources-content.tsx</span></div>
+          <div class="tree-line" onclick="showFile('resource-card')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📄</span><span class="tree-name ts">resource-card.tsx</span></div>
+          <div class="tree-line" onclick="showFile('upload-dialog')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">└─</span><span class="tree-icon">📄</span><span class="tree-name ts">upload-dialog.tsx</span></div>
+          <div class="tree-line"><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📁</span><span class="tree-name folder">notifications/</span></div>
+          <div class="tree-line" onclick="showFile('notif-content')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">└─</span><span class="tree-icon">📄</span><span class="tree-name ts">notifications-content.tsx</span></div>
+          <div class="tree-line"><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📁</span><span class="tree-name folder">profile/</span></div>
+          <div class="tree-line" onclick="showFile('profile-content')"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">└─</span><span class="tree-icon">📄</span><span class="tree-name ts">profile-content.tsx</span></div>
+          <div class="tree-line"><span class="tree-indent"></span><span class="tree-connector">└─</span><span class="tree-icon">📁</span><span class="tree-name folder">ui/</span></div>
+          <div class="tree-line"><span class="tree-indent"></span><span class="tree-indent"></span><span class="tree-connector">└─</span><span class="tree-icon">📄</span><span class="tree-name ts">57 shadcn/ui components</span></div>
+          <!-- lib/ hooks/ -->
+          <div class="tree-line" style="margin-top:6px;"><span class="tree-icon">📁</span><span class="tree-name folder">lib/</span></div>
+          <div class="tree-line" onclick="showFile('utils')"><span class="tree-indent"></span><span class="tree-connector">└─</span><span class="tree-icon">📄</span><span class="tree-name ts">utils.ts</span></div>
+          <div class="tree-line" style="margin-top:4px;"><span class="tree-icon">📁</span><span class="tree-name folder">hooks/</span></div>
+          <div class="tree-line" onclick="showFile('use-mobile')"><span class="tree-indent"></span><span class="tree-connector">├─</span><span class="tree-icon">📄</span><span class="tree-name ts">use-mobile.ts</span></div>
+          <div class="tree-line" onclick="showFile('use-toast')"><span class="tree-indent"></span><span class="tree-connector">└─</span><span class="tree-icon">📄</span><span class="tree-name ts">use-toast.ts</span></div>
+        </div>
+      </div>
+
+      <!-- ── CODE VIEWER ── -->
+      <div class="code-panel" id="codeViewer">
+        <div class="file-tabs" id="fileTabs"></div>
+        <div id="codeContent">
+          <!-- default state -->
+          <div id="code-empty" style="background:#0f172a;border-radius:12px;padding:60px 40px;text-align:center;color:#475569;">
+            <div style="font-size:40px;margin-bottom:16px;">👈</div>
+            <div style="font-size:16px;font-weight:600;color:#64748b;">Click any file in the tree to view its source code</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== CONCLUSION ===== -->
+<section class="conclusion" id="conclusion">""
+  <div class="container">
+    <span class="section-label">Conclusion</span>
+    <h2 class="section-title" style="margin-bottom:16px;">More Than a Project</h2>
+    <p class="section-sub">UniHub is a learning platform, a collaboration tool, and a real-world simulation of software development — all in one. It empowers students to learn by building, collaborate effectively, and prepare for industry challenges.</p>
+
+    <div class="conclusion-grid">
+      <div class="conc-card">
+        <div class="conc-icon">🎓</div>
+        <div class="conc-title">Learning Platform</div>
+        <div class="conc-desc">Hands-on experience with production-grade tools: React, Node.js, MongoDB, Socket.io, JWT, and more.</div>
+      </div>
+      <div class="conc-card">
+        <div class="conc-icon">🤝</div>
+        <div class="conc-title">Collaboration Tool</div>
+        <div class="conc-desc">Real team workflows with task management, real-time chat, file sharing, and role-based access.</div>
+      </div>
+      <div class="conc-card">
+        <div class="conc-icon">🏭</div>
+        <div class="conc-title">Industry Simulation</div>
+        <div class="conc-desc">Agile-like development, GitHub branching, pull requests, and code reviews — just like a real software team.</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px;font-size:14px;font-weight:700;color:#93c5fd;letter-spacing:1px;text-transform:uppercase;">Future Enhancements</div>
+    <div class="future-grid">
+      <span class="future-pill">📱 React Native Mobile App</span>
+      <span class="future-pill">🎥 Video Conferencing</span>
+      <span class="future-pill">🤖 AI Task Recommendations</span>
+      <span class="future-pill">📊 Advanced Analytics</span>
+      <span class="future-pill">🌐 Multi-University Support</span>
+    </div>
+
+    <p class="conclusion-cta">UniHub demonstrates that students can build real, scalable, production-quality software — and that collaboration, when done right, is the most powerful tool in any developer's toolkit.</p>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <strong>UniHub</strong> — Smart University Collaboration Platform &nbsp;·&nbsp;
+  Built with React · Node.js · MongoDB · Socket.io &nbsp;·&nbsp;
+  <strong>2026</strong>
+</footer>
+
+</body>
+</html>
