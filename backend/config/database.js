@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/unihub', {
+    const conn = await mongoose.connect('mongodb+srv://gonfanaol39_db_user:RnSOZj6iv6dvzJXE@cluster0.obknz2c.mongodb.net/?appName=Cluster0', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
