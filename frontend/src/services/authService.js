@@ -1,7 +1,4 @@
-/**
- * authService.js
- * Handles authentication API calls
- */
+
 import API from "./api";
 import { setLocal, removeLocal } from "../utils/storage";
 import { handleError } from "../utils/handleError";

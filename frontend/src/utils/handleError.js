@@ -1,7 +1,4 @@
-/**
- * handleError.js
- * Converts Axios or JS errors into user-friendly messages
- */
+
 export const handleError = (error) => {
   // Server responded with a status code
   if (error?.response) {

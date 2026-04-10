@@ -1,7 +1,4 @@
-/**
- * productService.js
- * Handles product CRUD API calls
- */
+
 import API from "./api";
 import { handleError } from "../utils/handleError";
 

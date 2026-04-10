@@ -1,7 +1,4 @@
-/**
- * userService.js
- * Handles user-related API calls
- */
+
 import API from "./api";
 import { handleError } from "../utils/handleError";
 
