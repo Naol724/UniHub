@@ -1,7 +1,4 @@
-/**
- * api.js
- * Axios instance with baseURL, token, and global error handling
- */
+
 import axios from "axios";
 import { getLocal } from "../utils/storage";
 import { handleError } from "../utils/handleError";

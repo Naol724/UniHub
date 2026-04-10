@@ -1,7 +1,4 @@
-/**
- * helpers.js
- * General-purpose utility functions
- */
+
 
 // STRING HELPERS
 export const capitalize = (text) => text ? text.charAt(0).toUpperCase() + text.slice(1) : "";

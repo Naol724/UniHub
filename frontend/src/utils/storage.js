@@ -1,9 +1,4 @@
-/**
- * storage.js
- * LocalStorage and SessionStorage helpers
- */
 
-// LOCAL STORAGE
 export const setLocal = (key, value) => {
   try { localStorage.setItem(key, JSON.stringify(value)); } catch (err) { console.error(err); }
 };

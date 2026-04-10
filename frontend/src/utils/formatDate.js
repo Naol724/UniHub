@@ -1,9 +1,4 @@
-/**
- * formatDate.js
- * Reusable date formatting helpers
- */
 
-// Format short date: "Apr 9, 2026"
 export const formatDate = (date) => {
   if (!date) return "";
   const d = new Date(date);

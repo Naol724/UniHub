@@ -1,9 +1,4 @@
-/**
- * validation.js
- * Reusable form validation helpers
- */
 
-// Check if value is empty
 export const isEmpty = (value) => !value || value.trim() === "";
 
 // Validate email format
