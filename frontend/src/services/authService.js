@@ -1,31 +1,40 @@
-
 import API from "./api";
-import { setLocal, removeLocal } from "../utils/storage";
-import { handleError } from "../utils/handleError";
+import { setLocal, removeLocal, getLocal } from "../utils/storage";
 
-// Login
+//  Login
 export const login = async (email, password) => {
-  try {
-    const res = await API.post("/auth/login", { email, password });
-    setLocal("token", res.data.token); // Save token
-    return res.data;
-  } catch (err) {
-    throw handleError(err);
-  }
+  const res = await API.post("/auth/login", {
+   email: email?.trim(),
+    password,
+  });
+
+  setLocal("token", res.data.token);
+  setLocal("user", res.data.user);
+
+  return res.data;
 };
 
 // Register
 export const register = async (userData) => {
-  try {
-    const res = await API.post("/auth/register", userData);
-    setLocal("token", res.data.token);
-    return res.data;
-  } catch (err) {
-    throw handleError(err);
-  }
+  const res = await API.post("/auth/register", {
+    ...userData,
+    email: userData.email.trim(),
+  });
+
+  setLocal("token", res.data.token);
+  setLocal("user", res.data.user);
+
+  return res.data;
 };
 
-// Logout
+//  Logout
 export const logout = () => {
   removeLocal("token");
+  removeLocal("user");
+  window.location.href = "/login";
+};
+
+//  Get current user
+export const getCurrentUser = () => {
+  return getLocal("user");
 };

@@ -1,6 +1,7 @@
 
-export const isEmpty = (value) => !value || value.trim() === "";
-
+export const isEmpty = (value) => {
+  return typeof value !== "string" || value.trim() === "";
+};
 // Validate email format
 export const isEmailValid = (email) => {
   if (isEmpty(email)) return false;
@@ -21,7 +22,10 @@ export const validateRegisterForm = (data) => {
   if (!isEmailValid(data.email)) errors.email = "Invalid email address";
   if (!isPasswordStrong(data.password)) errors.password = "Password must be at least 6 characters";
   if (!isMatch(data.password, data.confirmPassword)) errors.confirmPassword = "Passwords do not match";
-  return errors;
+return {
+  errors,
+  isValid: Object.keys(errors).length === 0,
+};
 };
 
 // Validate login form
@@ -29,5 +33,8 @@ export const validateLoginForm = (data) => {
   const errors = {};
   if (!isEmailValid(data.email)) errors.email = "Invalid email";
   if (isEmpty(data.password)) errors.password = "Password is required";
-  return errors;
+  return {
+  errors,
+  isValid: Object.keys(errors).length === 0,
+};
 };

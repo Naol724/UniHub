@@ -6,7 +6,7 @@ export const toUpper = (text) => text ? text.toUpperCase() : "";
 export const toLower = (text) => text ? text.toLowerCase() : "";
 
 // ARRAY HELPERS
-export const uniqueArray = (arr) => [...new Set(arr)];
+export const uniqueArray = (arr = []) => [...new Set(arr)];
 export const sortNumbersAsc = (arr) => arr.slice().sort((a, b) => a - b);
 export const sortNumbersDesc = (arr) => arr.slice().sort((a, b) => b - a);
 
