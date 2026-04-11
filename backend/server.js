@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -30,3 +31,31 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+=======
+// backend/server.js
+
+require("dotenv").config();
+const express = require("express");
+
+
+const errorHandler = require("./middleware/error.middleware");
+
+const app = express();
+
+// Middleware
+app.use(express.json());
+
+// Test Route
+app.get("/", (req, res) => {
+  res.send("API running...");
+});
+
+// Error Middleware (must be last)
+app.use(errorHandler);
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+>>>>>>> 41ad3b9 (Clean project setup with gitignore (removed node_modules))
