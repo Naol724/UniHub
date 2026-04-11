@@ -1,53 +1,42 @@
-
 import API from "./api";
-import { handleError } from "../utils/handleError";
 
-// Get all products
-export const getProducts = async () => {
-  try {
-    const res = await API.get("/products");
-    return res.data;
-  } catch (err) {
-    throw handleError(err);
-  }
+//  Get all products (with optional filters)
+export const fetchProducts = async (params = {}) => {
+  const res = await API.get("/products", { params });
+  return res.data;
 };
 
-// Get product by ID
-export const getProductById = async (id) => {
-  try {
-    const res = await API.get(`/products/${id}`);
-    return res.data;
-  } catch (err) {
-    throw handleError(err);
-  }
+//  Get product by ID
+export const fetchProductById = async (id) => {
+  if (!id) throw new Error("Product ID is required");
+
+  const res = await API.get(`/products/${id}`);
+  return res.data;
 };
 
 // Create product
 export const createProduct = async (productData) => {
-  try {
-    const res = await API.post("/products", productData);
-    return res.data;
-  } catch (err) {
-    throw handleError(err);
-  }
+  const cleanedData = {
+    ...productData,
+    name: productData.name?.trim(),
+  };
+
+  const res = await API.post("/products", cleanedData);
+  return res.data;
 };
 
-// Update product
+// Update product (partial update)
 export const updateProduct = async (id, productData) => {
-  try {
-    const res = await API.put(`/products/${id}`, productData);
-    return res.data;
-  } catch (err) {
-    throw handleError(err);
-  }
+  if (!id) throw new Error("Product ID is required");
+
+  const res = await API.patch(`/products/${id}`, productData);
+  return res.data;
 };
 
-// Delete product
+//  Delete product
 export const deleteProduct = async (id) => {
-  try {
-    const res = await API.delete(`/products/${id}`);
-    return res.data;
-  } catch (err) {
-    throw handleError(err);
-  }
+  if (!id) throw new Error("Product ID is required");
+
+  const res = await API.delete(`/products/${id}`);
+  return res.data;
 };

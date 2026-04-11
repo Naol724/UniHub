@@ -9,6 +9,7 @@ export const formatDate = (date) => {
 export const formatDateTime = (date) => {
   if (!date) return "";
   const d = new Date(date);
+  if(isNaN(d))return "";
   return d.toLocaleString(undefined, {
     year: "numeric",
     month: "short",
