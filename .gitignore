@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Dependencies
 node_modules/
 npm-debug.log*
@@ -57,3 +58,16 @@ Thumbs.db
 # Database
 *.sqlite
 *.db
+=======
+# dependencies
+node_modules/
+
+# environment
+.env
+
+# logs
+*.log
+
+# OS files
+.DS_Store
+>>>>>>> 41ad3b9 (Clean project setup with gitignore (removed node_modules))
