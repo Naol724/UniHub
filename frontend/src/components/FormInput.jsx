@@ -1,4 +1,5 @@
-const FormInput = ({ label, type = "text", name, value, onChange, error, placeholder }) => {
+
+// Reusable form input component with label, error handling, and stylingconst FormInput = ({ label, type = "text", name, value, onChange, error, placeholder }) => {
   return (
     <div>
       {label && (
