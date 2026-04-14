@@ -1,3 +1,4 @@
+// Login page component with email and password validation
 import { useState } from "react";
 
 const Login = () => {
