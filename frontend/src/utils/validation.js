@@ -1,6 +1,6 @@
 
 // Validation utilities for authentication forms (email, password, name, confirm password)/**
- * Validates an email address.
+ /* Validates an email address.
  * @param {string} value
  * @returns {string} error message or empty string
  */
