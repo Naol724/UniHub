@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+// Register page component with full form validation and password matchimport { useState } from "react";
 
 const Register = () => {
   const [formData, setFormData] = useState({
