@@ -204,3 +204,4 @@ Card.Footer = CardFooter;
 Card.Media = CardMedia;
 
 export default Card;
+export { CardHeader, CardBody, CardFooter, CardMedia };
