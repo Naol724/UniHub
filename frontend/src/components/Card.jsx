@@ -197,11 +197,5 @@ const CardMedia = ({ src, alt, height = '48', className = '' }) => (
   </div>
 );
 
-// Attach sub-components
-Card.Header = CardHeader;
-Card.Body = CardBody;
-Card.Footer = CardFooter;
-Card.Media = CardMedia;
-
 export default Card;
 export { CardHeader, CardBody, CardFooter, CardMedia };
