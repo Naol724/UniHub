@@ -6,15 +6,15 @@ import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Pages
-import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
-import Dashboard from './pages/dashboard/Dashboard';
-import Teams from './pages/teams/Teams';
-import Tasks from './pages/tasks/Tasks';
-import Messages from './pages/messages/Messages';
-import Resources from './pages/resources/Resources';
-import Notifications from './pages/notifications/Notifications';
-import Profile from './pages/profile/Profile';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard/Dashboard';
+import Teams from './pages/Teams/Teams';
+import Tasks from './pages/Tasks/Tasks';
+import Messages from './pages/Messages/Messages';
+import Resources from './pages/Resources/Resources';
+import Notifications from './pages/Notifications/Notifications';
+import Profile from './pages/Profile/Profile';
 
 function App() {
   return (
