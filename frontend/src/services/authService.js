@@ -34,7 +34,29 @@ export const logout = () => {
   window.location.href = "/login";
 };
 
-//  Get current user
-export const getCurrentUser = () => {
+//  Get current user from API
+export const getCurrentUser = async () => {
+  const res = await API.get("/auth/me");
+  return res.data;
+};
+
+//  Get current user from localStorage
+export const getLocalUser = () => {
   return getLocal("user");
+};
+
+//  Update user profile
+export const updateProfile = async (userData) => {
+  const res = await API.put("/auth/profile", userData);
+  
+  // Update localStorage
+  setLocal("user", res.data.user);
+  
+  return res.data;
+};
+
+//  Change password
+export const changePassword = async (passwordData) => {
+  const res = await API.put("/auth/change-password", passwordData);
+  return res.data;
 };
