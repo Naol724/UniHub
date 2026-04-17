@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import FormInput from "../components/FormInput";
 import { validateEmail, validatePassword, validateName, validateConfirmPassword } from "../utils/validation";
+import { useAuth } from "../contexts/AuthContext";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +14,8 @@ const Register = () => {
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { register } = useAuth();
+  const navigate = useNavigate();
 
   const validate = () => {
     const newErrors = {};
@@ -40,13 +44,18 @@ const Register = () => {
       return;
     }
     setIsSubmitting(true);
-    // TODO: wire up to auth service
-    console.log("Registering with:", formData);
-    setIsSubmitting(false);
+    try {
+      await register(formData);
+      navigate('/');
+    } catch (error) {
+      setErrors({ general: error.message || 'Registration failed' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-10">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-10">
       {/* Card */}
       <div
         className="w-full bg-white"
@@ -94,12 +103,15 @@ const Register = () => {
         </h1>
 
         {/* Subtitle */}
-        <p
-          className="text-center text-gray-400 mb-6"
-          style={{ fontSize: "13px" }}
-        >
-          Join UniHub and start collaborating
+        <p className="text-center text-slate-500 mb-6 text-sm">
+          Join UniHub to collaborate with your university peers
         </p>
+
+        {errors.general && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            {errors.general}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           {/* First Name + Last Name */}
@@ -177,11 +189,11 @@ const Register = () => {
         </form>
 
         {/* Footer */}
-        <p className="text-center text-gray-400 mt-5" style={{ fontSize: "13px" }}>
+        <p className="text-center text-slate-400 mt-5 text-sm">
           Already have an account?{" "}
-          <a href="/login" className="text-blue-500 font-medium hover:underline">
+          <Link to="/login" className="text-blue-500 font-medium hover:underline">
             Sign in
-          </a>
+          </Link>
         </p>
       </div>
     </div>

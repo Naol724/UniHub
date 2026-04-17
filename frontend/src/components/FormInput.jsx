@@ -6,8 +6,7 @@ const FormInput = ({ label, type = "text", name, value, onChange, error, placeho
       {label && (
         <label
           htmlFor={name}
-          className="block font-bold text-gray-700 mb-1"
-          style={{ fontSize: "12px" }}
+          className="block font-semibold text-slate-700 mb-1 text-xs"
         >
           {label}
         </label>
@@ -19,16 +18,14 @@ const FormInput = ({ label, type = "text", name, value, onChange, error, placeho
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full outline-none transition text-sm text-gray-800 placeholder-gray-400"
-        style={{
-          padding: "9px 13px",
-          borderRadius: "10px",
-          background: error ? "#fff5f5" : "#f8fafc",
-          border: error ? "1px solid #f87171" : "1px solid #e2e8f0",
-        }}
+        className={`w-full outline-none transition text-sm text-slate-800 placeholder-slate-400 px-3 py-2 border rounded-lg ${
+          error 
+            ? 'bg-red-50 border-red-500' 
+            : 'bg-slate-50 border-slate-200 focus:border-blue-500'
+        }`}
       />
       {error && (
-        <p className="mt-1 text-red-500" style={{ fontSize: "11px" }}>
+        <p className="mt-1 text-red-500 text-xs">
           {error}
         </p>
       )}

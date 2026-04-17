@@ -1,11 +1,15 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import FormInput from "../components/FormInput";
 import { validateEmail, validatePassword } from "../utils/validation";
+import { useAuth } from "../contexts/AuthContext";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const validate = () => {
     const newErrors = {};
@@ -31,9 +35,14 @@ const Login = () => {
       return;
     }
     setIsSubmitting(true);
-    // TODO: wire up to auth service
-    console.log("Logging in with:", formData);
-    setIsSubmitting(false);
+    try {
+      await login(formData);
+      navigate('/');
+    } catch (error) {
+      setErrors({ general: error.message || 'Login failed' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleGoogle = () => {
@@ -42,27 +51,12 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
       {/* Card */}
-      <div
-        className="w-full bg-white"
-        style={{
-          maxWidth: "380px",
-          borderRadius: "20px",
-          padding: "36px 32px",
-          boxShadow:
-            "0 4px 6px -1px rgba(0,0,0,0.07), 0 10px 40px -4px rgba(0,0,0,0.10)",
-        }}
-      >
+      <div className="w-full bg-white rounded-2xl shadow-lg p-8 max-w-sm border border-slate-200">
         {/* Logo */}
         <div className="flex justify-center mb-5">
-          <div
-            className="flex items-center justify-center w-12 h-12"
-            style={{
-              background: "linear-gradient(135deg, #3b82f6 0%, #7c3aed 100%)",
-              borderRadius: "14px",
-            }}
-          >
+          <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
             <svg
               width="26"
               height="26"
@@ -82,21 +76,20 @@ const Login = () => {
         </div>
 
         {/* Title */}
-        <h1
-          className="text-center font-bold text-gray-900 mb-1"
-          style={{ fontSize: "20px" }}
-        >
+        <h1 className="text-center font-bold text-slate-900 mb-2 text-xl">
           Welcome back
         </h1>
 
         {/* Subtitle */}
-        <p
-          className="text-center text-gray-400 mb-6"
-          style={{ fontSize: "13px" }}
-        >
+        <p className="text-center text-slate-500 mb-6 text-sm">
           Sign in to your UniHub account
         </p>
 
+        {errors.general && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            {errors.general}
+          </div>
+        )}
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           {/* Email */}
           <FormInput
@@ -112,13 +105,12 @@ const Login = () => {
           {/* Password — custom label row for "Forgot password?" link */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <span className="font-bold text-gray-700" style={{ fontSize: "12px" }}>
+              <span className="font-bold text-gray-700 text-sm">
                 Password
               </span>
               <a
                 href="#"
-                className="text-blue-500 hover:text-blue-600"
-                style={{ fontSize: "11px" }}
+                className="text-blue-500 hover:text-blue-600 text-xs transition"
               >
                 Forgot password?
               </a>
@@ -137,16 +129,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full text-white text-sm transition disabled:opacity-60"
-            style={{
-              background: "linear-gradient(90deg, #3b82f6 0%, #2563eb 100%)",
-              borderRadius: "10px",
-              padding: "11px",
-              fontWeight: 600,
-              border: "none",
-              cursor: isSubmitting ? "not-allowed" : "pointer",
-              marginTop: "4px",
-            }}
+            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-semibold py-2.5 px-4 rounded-lg transition disabled:opacity-60 disabled:cursor-not-allowed mt-1 hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             {isSubmitting ? "Signing in..." : "Sign in"}
           </button>
@@ -154,23 +137,18 @@ const Login = () => {
 
         {/* Divider */}
         <div className="flex items-center gap-3 my-4">
-          <div className="flex-1 h-px bg-gray-200" />
-          <span className="text-gray-400" style={{ fontSize: "12px" }}>
+          <div className="flex-1 h-px bg-slate-200" />
+          <span className="text-slate-400 text-xs">
             or
           </span>
-          <div className="flex-1 h-px bg-gray-200" />
+          <div className="flex-1 h-px bg-slate-200" />
         </div>
 
         {/* Google Button */}
         <button
           type="button"
           onClick={handleGoogle}
-          className="w-full flex items-center justify-center gap-2 bg-white text-gray-700 text-sm font-medium transition hover:bg-gray-50"
-          style={{
-            border: "1px solid #e2e8f0",
-            borderRadius: "10px",
-            padding: "10px",
-          }}
+          className="w-full flex items-center justify-center gap-2 bg-white text-slate-700 text-sm font-medium transition hover:bg-slate-50 border border-slate-200 rounded-lg py-2.5"
         >
           {/* Google icon */}
           <svg width="18" height="18" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
@@ -183,11 +161,11 @@ const Login = () => {
         </button>
 
         {/* Footer */}
-        <p className="text-center text-gray-400 mt-5" style={{ fontSize: "13px" }}>
+        <p className="text-center text-slate-400 mt-5 text-sm">
           Don&apos;t have an account?{" "}
-          <a href="#" className="text-blue-500 font-medium hover:underline">
+          <Link to="/register" className="text-blue-500 font-medium hover:underline">
             Sign up
-          </a>
+          </Link>
         </p>
       </div>
     </div>
