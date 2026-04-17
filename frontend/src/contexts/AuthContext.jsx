@@ -1,6 +1,6 @@
 // frontend/src/contexts/AuthContext.jsx
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import authService from '../services/authService';
+import * as authService from '../services/authService';
 
 // Initial state
 const initialState = {
