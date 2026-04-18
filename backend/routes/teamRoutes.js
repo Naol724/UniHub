@@ -1,36 +1,33 @@
-// backend/routes/teamRoutes.js
-import { Router } from "express";
-import {
-    createTeam,
-    getTeams,
-    getTeamById,
-    updateTeam,
-    deleteTeam,
-    addMember,
-    removeMember,
-    getTeamMembers,
-    updateMemberRole,
-    checkUserRole
-} from "../controllers/team-controller.js";
-import { protect, isTeamOwner, isTeamOwnerOrAdmin, isTeamMember } from "../middleware/authMiddleware.js";
+const express = require('express');
+const {
+  createTeam,
+  getUserTeams,
+  getTeamById,
+  inviteMember,
+  joinTeam,
+  updateTeam,
+  removeMember,
+  deleteTeam
+} = require('../controllers/teamController');
+const { protect } = require('../middleware/authMiddleware');
 
-const teamRouter = Router();
+const router = express.Router();
 
-// All team routes require authentication
-teamRouter.use(protect);
+// All routes require authentication
+router.use(protect);
 
-// Routes accessible to authenticated users
-teamRouter.post("/teams", createTeam);
-teamRouter.get("/teams", getTeams);
-teamRouter.get("/teams/:teamId", getTeamById);
-teamRouter.get("/teams/:teamId/members", getTeamMembers);
-teamRouter.get("/teams/:teamId/check-role/:userId", checkUserRole);
+// Team CRUD routes
+router.post('/', createTeam); // Create a new team
+router.get('/', getUserTeams); // Get all teams for current user
+router.get('/:id', getTeamById); // Get single team by ID
+router.put('/:id', updateTeam); // Update team details (leader only)
+router.delete('/:id', deleteTeam); // Delete team (leader only)
 
-// Routes requiring team membership
-teamRouter.put("/teams/:teamId", isTeamOwnerOrAdmin, updateTeam);
-teamRouter.post("/teams/:teamId/members", isTeamOwnerOrAdmin, addMember);
-teamRouter.delete("/teams/:teamId/members/:memberId", isTeamOwner, removeMember);
-teamRouter.put("/teams/:teamId/members/:memberId/role", isTeamOwner, updateMemberRole);
-teamRouter.delete("/teams/:teamId", isTeamOwner, deleteTeam);
+// Team member management
+router.post('/:id/invite', inviteMember); // Invite member to team (leader only)
+router.post('/join', joinTeam); // Join team via invite code
 
-export default teamRouter;
+// Remove member from team (leader only)
+router.delete('/:id/members/:memberId', removeMember);
+
+module.exports = router;

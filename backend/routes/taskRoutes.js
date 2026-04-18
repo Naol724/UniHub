@@ -1,30 +1,25 @@
-// backend/routes/taskRoutes.js
-import { Router } from "express";
-import {
-    createTask,
-    updateTaskProgress,
-    getTasks,
-    getTaskById,
-    deleteTask,
-    getTeamTasks,
-    getUserTasks
-} from "../controllers/taskController.js";
-import { protect, isTeamOwnerOrAdmin, isTeamMember } from "../middleware/authMiddleware.js";
+const express = require('express');
+const {
+  createTask,
+  getTasksForTeam,
+  getTaskById,
+  updateTask,
+  updateTaskStatus,
+  deleteTask
+} = require('../controllers/taskController');
+const { protect } = require('../middleware/authMiddleware');
 
-const taskRouter = Router();
+const router = express.Router();
 
-// All task routes require authentication
-taskRouter.use(protect);
+// All routes require authentication
+router.use(protect);
 
-// Routes accessible to authenticated users
-taskRouter.get("/tasks", getTasks);
-taskRouter.get("/tasks/:taskId", getTaskById);
-taskRouter.get("/tasks/user/:userId", getUserTasks);
-taskRouter.get("/tasks/team/:teamId", isTeamMember, getTeamTasks);
+// Task CRUD routes
+router.post('/', createTask); // Create a new task
+router.get('/team/:teamId', getTasksForTeam); // Get all tasks for a specific team
+router.get('/:id', getTaskById); // Get single task by ID
+router.put('/:id', updateTask); // Update task details
+router.put('/:id/status', updateTaskStatus); // Update task status (move between columns)
+router.delete('/:id', deleteTask); // Delete task
 
-// Routes requiring owner or admin privileges
-taskRouter.post("/tasks", isTeamOwnerOrAdmin, createTask);
-taskRouter.put("/tasks/:taskId", isTeamOwnerOrAdmin, updateTaskProgress);  // Make sure this exists
-taskRouter.delete("/tasks/:taskId", isTeamOwnerOrAdmin, deleteTask);
-
-export default taskRouter;
+module.exports = router;
