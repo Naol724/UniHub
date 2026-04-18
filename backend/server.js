@@ -18,7 +18,7 @@ import User from "./models/user-model.js";
 import path from 'path';
 import { protect } from "./middleware/authMiddleware.js";
 import { fileURLToPath } from 'url';
-import adminRouter from "./routes/adminRoutes.js";
+// import adminRouter from "./routes/adminRoutes.js";
 // import adminRouter from "./routes/adminRoutes.js";
 
 
