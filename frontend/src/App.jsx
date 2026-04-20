@@ -8,6 +8,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 // Pages
 import Login from './pages/Login';
 import Register from './pages/Register';
+import GoogleSuccess from './pages/auth/GoogleSuccess';
 import Dashboard from './pages/Dashboard/Dashboard';
 import Teams from './pages/Teams/Teams';
 import Tasks from './pages/Tasks/Tasks';
@@ -25,6 +26,7 @@ function App() {
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/auth/google/success" element={<GoogleSuccess />} />
             
             {/* Protected routes */}
             <Route path="/" element={

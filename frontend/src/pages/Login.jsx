@@ -46,8 +46,7 @@ const Login = () => {
   };
 
   const handleGoogle = () => {
-    // TODO: wire up Google OAuth
-    console.log("Google sign-in");
+    window.location.href = `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}/api/google`;
   };
 
   return (

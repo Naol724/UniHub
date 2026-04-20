@@ -25,8 +25,17 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get("/", (req, res) => {
-  res.json({ success: true, message: "UniHub Backend Server is Running Successfully!" });
+  res.json({ 
+    success: true, 
+    message: "UniHub Backend Server is Running Successfully!",
+    mongodb: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+    env_uri_set: !!process.env.MONGODB_URI
+  });
 });
+
+const passport = require("passport");
+const googleAuthRoutes = require("./routes/googleAuthRoutes");
+const { initPassport } = require("./routes/googleAuthRoutes");
 
 const authRoutes         = require("./routes/authRoutes");
 const teamRoutes         = require("./routes/teamRoutes");
@@ -35,16 +44,22 @@ const resourceRoutes     = require("./routes/resourceRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const userRoutes         = require("./routes/userRoutes");
 
+initPassport(app);
+
 app.use("/api/auth",          authRoutes);
 app.use("/api/teams",         teamRoutes);
 app.use("/api/tasks",         taskRoutes);
 app.use("/api/resources",     resourceRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/users",         userRoutes);
+app.use("/api/google",        googleAuthRoutes);
 
 app.use(errorHandler);
 
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(process.env.MONGODB_URI, {
+  serverSelectionTimeoutMS: 30000,
+  socketTimeoutMS: 45000,
+})
   .then(() => console.log("✅ MongoDB Connected Successfully"))
   .catch((err) => console.error("❌ MongoDB Connection Error:", err.message));
 
