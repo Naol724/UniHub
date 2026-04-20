@@ -4,7 +4,7 @@ import { getLocal , removeLocal} from "../utils/storage";
 import { handleError } from "../utils/handleError";
 
 const API = axios.create({
-baseURL: process.env.REACT_APP_API_URL, // change to your backend URL
+baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
   headers: { "Content-Type": "application/json" },
   timeout: 10000,
 });
