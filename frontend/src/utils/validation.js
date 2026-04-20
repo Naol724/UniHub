@@ -1,40 +1,24 @@
-
-export const isEmpty = (value) => {
-  return typeof value !== "string" || value.trim() === "";
-};
-// Validate email format
-export const isEmailValid = (email) => {
-  if (isEmpty(email)) return false;
-  const regex = /^\S+@\S+\.\S+$/;
-  return regex.test(email);
+export const validateEmail = (value) => {
+  if (!value || !value.trim()) return "Email is required.";
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(value.trim())) return "Please enter a valid email address.";
+  return "";
 };
 
-// Validate password strength
-export const isPasswordStrong = (password) => !isEmpty(password) && password.length >= 6;
-
-// Check if two values match
-export const isMatch = (value1, value2) => value1 === value2;
-
-// Validate register form
-export const validateRegisterForm = (data) => {
-  const errors = {};
-  if (isEmpty(data.name)) errors.name = "Name is required";
-  if (!isEmailValid(data.email)) errors.email = "Invalid email address";
-  if (!isPasswordStrong(data.password)) errors.password = "Password must be at least 6 characters";
-  if (!isMatch(data.password, data.confirmPassword)) errors.confirmPassword = "Passwords do not match";
-return {
-  errors,
-  isValid: Object.keys(errors).length === 0,
-};
+export const validatePassword = (value) => {
+  if (!value) return "Password is required.";
+  if (value.length < 6) return "Password must be at least 6 characters.";
+  return "";
 };
 
-// Validate login form
-export const validateLoginForm = (data) => {
-  const errors = {};
-  if (!isEmailValid(data.email)) errors.email = "Invalid email";
-  if (isEmpty(data.password)) errors.password = "Password is required";
-  return {
-  errors,
-  isValid: Object.keys(errors).length === 0,
+export const validateName = (value, fieldLabel = "Name") => {
+  if (!value || !value.trim()) return `${fieldLabel} is required.`;
+  if (value.trim().length < 2) return `${fieldLabel} must be at least 2 characters.`;
+  return "";
 };
+
+export const validateConfirmPassword = (value, password) => {
+  if (!value) return "Please confirm your password.";
+  if (value !== password) return "Passwords do not match.";
+  return "";
 };
