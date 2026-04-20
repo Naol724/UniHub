@@ -1,15 +1,8 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const roomSchema = new mongoose.Schema({
-    roomType:{
-        type:String,
-        enum:["team","direct"],
-        required:true
-    },
-    created_at:{
-        type:Date,
-        default:Date.now
-    }
+    roomType: { type: String, enum: ["team", "direct"], required: true },
+    created_at: { type: Date, default: Date.now }
 });
 
-export default mongoose.model("Room",roomSchema);
+module.exports = mongoose.model("Room", roomSchema);
