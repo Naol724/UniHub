@@ -114,7 +114,7 @@ export const AuthProvider = ({ children }) => {
           const response = await authService.getCurrentUser();
           dispatch({
             type: AUTH_ACTIONS.LOAD_USER_SUCCESS,
-            payload: response.data.user
+            payload: response.user
           });
         } catch (error) {
           dispatch({
@@ -139,18 +139,11 @@ export const AuthProvider = ({ children }) => {
     try {
       dispatch({ type: AUTH_ACTIONS.LOGIN_START });
       const response = await authService.login(credentials);
-      
-      localStorage.setItem('token', response.data.token);
-      
       dispatch({
         type: AUTH_ACTIONS.LOGIN_SUCCESS,
-        payload: {
-          user: response.data.user,
-          token: response.data.token
-        }
+        payload: { user: response.user, token: response.token }
       });
-      
-      return response.data;
+      return response;
     } catch (error) {
       dispatch({
         type: AUTH_ACTIONS.LOGIN_FAILURE,
@@ -165,18 +158,11 @@ export const AuthProvider = ({ children }) => {
     try {
       dispatch({ type: AUTH_ACTIONS.REGISTER_START });
       const response = await authService.register(userData);
-      
-      localStorage.setItem('token', response.data.token);
-      
       dispatch({
         type: AUTH_ACTIONS.REGISTER_SUCCESS,
-        payload: {
-          user: response.data.user,
-          token: response.data.token
-        }
+        payload: { user: response.user, token: response.token }
       });
-      
-      return response.data;
+      return response;
     } catch (error) {
       dispatch({
         type: AUTH_ACTIONS.REGISTER_FAILURE,
