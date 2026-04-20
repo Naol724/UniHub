@@ -1,15 +1,10 @@
-// backend/routes/userRoutes.js
-import { Router } from "express";
-import { getAllUsers, searchUsers, getUserById } from "../controllers/userController.js";
-import { protect, isAdmin } from "../middleware/authMiddleware.js";
+const express = require("express");
+const router = express.Router();
+const { getAllUsers, searchUsers, getUserById } = require("../controllers/userController");
+const { protect, isAdmin } = require("../middleware/authMiddleware");
 
-const userRouter = Router();
+router.get("/:userId", getUserById);
+router.get("/", protect, getAllUsers);
+router.get("/search", protect, searchUsers);
 
-// Public route - get user by ID (limited info)
-userRouter.get("/:userId", getUserById);
-
-// Admin only routes
-userRouter.get("/", protect, getAllUsers);
-userRouter.get("/search", protect, searchUsers);
-
-export default userRouter;
+module.exports = router;
