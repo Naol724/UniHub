@@ -3,7 +3,7 @@ import { setLocal, removeLocal, getLocal } from "../utils/storage";
 
 export const login = async (credentials) => {
   const { email, password } = credentials;
-  const res = await API.post("/auth/login", { email: email?.trim(), password });
+  const res = await API.post("/user/login", { email: email?.trim(), password });
   // Strip "Bearer " prefix before storing
   const token = res.data.token?.replace("Bearer ", "") || res.data.token;
   setLocal("token", token);
@@ -13,7 +13,7 @@ export const login = async (credentials) => {
 
 export const register = async (userData) => {
   const { confirmPassword, ...rest } = userData;
-  const res = await API.post("/auth/register", { ...rest, email: userData.email.trim() });
+  const res = await API.post("/user/register", { ...rest, email: userData.email.trim() });
   const token = res.data.token?.replace("Bearer ", "") || res.data.token;
   setLocal("token", token);
   setLocal("user", res.data.user);
