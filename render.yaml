@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: unihub-backend
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        fromDatabase:
+          name: unihub-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://unihub-frontend.onrender.com
+
+  - type: web
+    name: unihub-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://unihub-backend.onrender.com/api
+
+databases:
+  - name: unihub-db
+    databaseName: unihub
+    user: unihub-user
