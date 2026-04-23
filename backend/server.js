@@ -33,6 +33,7 @@ app.use(cors({
     });
     
     if (isAllowed) return callback(null, true);
+    console.log('CORS blocked origin:', origin);
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true
@@ -73,11 +74,38 @@ app.use("/api/google",        googleAuthRoutes);
 
 app.use(errorHandler);
 
+// Add MongoDB connection debugging
+console.log('🔍 Environment check:');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('MONGODB_URI set:', !!process.env.MONGODB_URI);
+console.log('MONGODB_URI (masked):', process.env.MONGODB_URI?.replace(/:\/\/([^:]+):([^@]+)@/, '://***:***@'));
+
 mongoose.connect(process.env.MONGODB_URI, {
   serverSelectionTimeoutMS: 30000,
   socketTimeoutMS: 45000,
+  bufferCommands: false,
+  maxPoolSize: 10,
+  minPoolSize: 5,
+  maxIdleTimeMS: 30000,
+  retryWrites: true,
+  w: 'majority'
 })
-  .then(() => console.log("✅ MongoDB Connected Successfully"))
-  .catch((err) => console.error("❌ MongoDB Connection Error:", err.message));
+  .then(() => {
+    console.log("✅ MongoDB Connected Successfully");
+    console.log(`📊 Database: ${mongoose.connection.db.databaseName}`);
+    console.log(`🌐 Host: ${mongoose.connection.host}`);
+  })
+  .catch((err) => {
+    console.error("❌ MongoDB Connection Error:", err.message);
+    console.error("🔍 Error Code:", err.code);
+    console.error("🔍 Error Name:", err.name);
+    if (err.reason) {
+      console.error("🔍 Reason:", err.reason);
+    }
+    // Don't exit in production, let the app run without DB for debugging
+    if (process.env.NODE_ENV !== 'production') {
+      process.exit(1);
+    }
+  });
 
 app.listen(PORT, () => console.log(`🚀 Server is running on port ${PORT}`));
