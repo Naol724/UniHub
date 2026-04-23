@@ -8,7 +8,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: MONGODB_URI
-        value: mongodb+srv://gonfanaol39_db_user:RnSOZj6iv6dvzJXE@cluster0.1fqgyri.mongodb.net/unihub?retryWrites=true&w=majority&appName=Cluster0
+        value: mongodb+srv://gonfanaol39_db_user:RnSOZj6iv6dvzJXE@cluster0.obknz2c.mongodb.net/?appName=Cluster0
       - key: JWT_SECRET
         generateValue: true
       - key: FRONTEND_URL
