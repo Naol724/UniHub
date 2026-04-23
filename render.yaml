@@ -8,13 +8,15 @@ services:
       - key: NODE_ENV
         value: production
       - key: MONGODB_URI
-        fromDatabase:
-          name: unihub-db
-          property: connectionString
+        value: mongodb+srv://gonfanaol39_db_user:RnSOZj6iv6dvzJXE@cluster0.1fqgyri.mongodb.net/unihub?retryWrites=true&w=majority&appName=Cluster0
       - key: JWT_SECRET
         generateValue: true
       - key: FRONTEND_URL
         value: https://unihub-frontend.onrender.com
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
 
   - type: web
     name: unihub-frontend
@@ -24,8 +26,3 @@ services:
     envVars:
       - key: VITE_API_URL
         value: https://unihub-backend.onrender.com/api
-
-databases:
-  - name: unihub-db
-    databaseName: unihub
-    user: unihub-user
