@@ -20,7 +20,7 @@ const createFirstAdmin = async () => {
         if (!mongoURI) {
             console.error("❌ MONGODB_URI not found in .env file");
             console.log("\nPlease create a .env file in the backend folder with:");
-            console.log('MONGODB_URI=mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/unihub?retryWrites=true&w=majority');
+            console.log('MONGODB_URI=mongodb+srv://username:password@cluster0.unt6mmg.mongodb.net/unihub?retryWrites=true&w=majority');
             process.exit(1);
         }
         
