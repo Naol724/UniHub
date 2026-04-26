@@ -6,7 +6,7 @@ PORT=5000
 NODE_ENV=development
 
 # Database Configuration
-MONGODB_URI=mongodb+srv://gonfanaol39_db_user:RnSOZj6iv6dvzJXE@cluster0.obknz2c.mongodb.net/?appName=Cluster0
+MONGODB_URI=mongodb+srv://gonfanaol39_db_user:WGHlbvt6QOEcIuG2@cluster0.unt6mmg.mongodb.net/unihub?retryWrites=true&w=majority&appName=Cluster0
 
 # JWT Configuration
 JWT_SECRET=db2fcfa3cd899391bad7c60a20e4dea2a1f2929206d6dcd7d9d3f238fbe341362dd3bcbca09f58e5f017697fcae8956e15898c872a6e3cbd21b510da123de03
