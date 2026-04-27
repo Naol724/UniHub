@@ -67,12 +67,12 @@ export const taskAPI = {
 
 // User APIs
 export const userAPI = {
-  register: (data) => API.post("/user/register", data),
-  login: (data) => API.post("/user/login", data),
-  getProfile: (userId) => API.get(`/user/profile/${userId}`),
-  updateProfile: (userId, data) => API.put(`/user/profile/${userId}`, data),
-  getAllUsers: () => API.get("/users"),
-  searchUsers: (search) => API.get(`/users/search?search=${search}`),
+  register: (data) => API.post("/auth/user/register", data),
+  login: (data) => API.post("/auth/user/login", data),
+  getProfile: (userId) => API.get(`/auth/profile/${userId}`),
+  updateProfile: (userId, data) => API.put(`/auth/profile/${userId}`, data),
+  getAllUsers: () => API.get("/auth/users"),
+  searchUsers: (search) => API.get(`/auth/users/search?search=${search}`),
 };
 
 // Admin APIs

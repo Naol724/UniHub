@@ -3,7 +3,7 @@ import { setLocal, removeLocal, getLocal } from "../utils/storage";
 
 export const login = async (credentials) => {
   const { email, password } = credentials;
-  const res = await API.post("/user/login", { email: email?.trim(), password });
+  const res = await API.post("/auth/user/login", { email: email?.trim(), password });
   // Strip "Bearer " prefix before storing
   const token = res.data.token?.replace("Bearer ", "") || res.data.token;
   setLocal("token", token);
@@ -13,7 +13,7 @@ export const login = async (credentials) => {
 
 export const register = async (userData) => {
   const { confirmPassword, ...rest } = userData;
-  const res = await API.post("/user/register", { ...rest, email: userData.email.trim() });
+  const res = await API.post("/auth/user/register", { ...rest, email: userData.email.trim() });
   const token = res.data.token?.replace("Bearer ", "") || res.data.token;
   setLocal("token", token);
   setLocal("user", res.data.user);
@@ -38,7 +38,7 @@ export const getLocalUser = () => getLocal("user");
 export const updateProfile = async (userData) => {
   const userId = getLocal("user")?.id;
   if (!userId) throw new Error("No user logged in");
-  const res = await API.put(`/profile/${userId}`, userData);
+  const res = await API.put(`/auth/profile/${userId}`, userData);
   const updatedUser = res.data.user;
   setLocal("user", updatedUser);
   return res.data;
@@ -47,6 +47,6 @@ export const updateProfile = async (userData) => {
 export const changePassword = async (passwordData) => {
   const userId = getLocal("user")?.id;
   if (!userId) throw new Error("No user logged in");
-  const res = await API.post(`/profile/${userId}/change-password`, passwordData);
+  const res = await API.post(`/auth/profile/${userId}/change-password`, passwordData);
   return res.data;
 };

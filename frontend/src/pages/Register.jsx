@@ -48,7 +48,8 @@ const Register = () => {
       await register(formData);
       navigate('/');
     } catch (error) {
-      setErrors({ general: error.message || 'Registration failed' });
+      const errorMsg = error.response?.data?.message || error.message || 'Registration failed';
+      setErrors({ general: errorMsg });
     } finally {
       setIsSubmitting(false);
     }
