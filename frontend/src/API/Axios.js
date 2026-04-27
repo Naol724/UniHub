@@ -1,5 +1,6 @@
 // frontend/src/API/Axios.js
 import axios from "axios";
+import { getLocal, removeLocal } from "../utils/storage";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -14,14 +15,10 @@ const API = axios.create({
 // Request interceptor - Add token to all requests
 API.interceptors.request.use(
   (config) => {
-    // Check for admin token first, then user token
-    const adminToken = localStorage.getItem("UniHub-Admin-Token");
-    const userToken = localStorage.getItem("UniHub-Haramaya-Dev");
-    
-    if (adminToken) {
-      config.headers.Authorization = adminToken;
-    } else if (userToken) {
-      config.headers.Authorization = userToken;
+    // Get token from localStorage using the standard key
+    const token = getLocal("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
@@ -33,18 +30,10 @@ API.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Clear both user and admin tokens
-      localStorage.removeItem("UniHub-Haramaya-Dev");
-      localStorage.removeItem("UniHub-User");
-      localStorage.removeItem("UniHub-Admin-Token");
-      localStorage.removeItem("UniHub-Admin");
-      
-      // Redirect based on current path
-      if (window.location.pathname.startsWith('/admin')) {
-        window.location.href = "/admin/login";
-      } else {
-        window.location.href = "/user/login";
-      }
+      // Clear tokens and redirect to login
+      removeLocal("token");
+      removeLocal("user");
+      window.location.href = "/login";
     }
     return Promise.reject(error);
   }

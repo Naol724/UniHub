@@ -29,19 +29,24 @@ export const logout = () => {
 export const getCurrentUser = async () => {
   const localUser = getLocal("user");
   if (localUser) return { user: localUser };
-  const res = await API.get("/auth/me");
-  return res.data;
+  // Return local user if no API call needed
+  return { user: localUser };
 };
 
 export const getLocalUser = () => getLocal("user");
 
 export const updateProfile = async (userData) => {
-  const res = await API.put("/auth/profile", userData);
-  setLocal("user", res.data.user);
+  const userId = getLocal("user")?.id;
+  if (!userId) throw new Error("No user logged in");
+  const res = await API.put(`/profile/${userId}`, userData);
+  const updatedUser = res.data.user;
+  setLocal("user", updatedUser);
   return res.data;
 };
 
 export const changePassword = async (passwordData) => {
-  const res = await API.put("/auth/change-password", passwordData);
+  const userId = getLocal("user")?.id;
+  if (!userId) throw new Error("No user logged in");
+  const res = await API.post(`/profile/${userId}/change-password`, passwordData);
   return res.data;
 };

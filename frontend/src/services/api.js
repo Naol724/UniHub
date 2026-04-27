@@ -1,10 +1,10 @@
 
 import axios from "axios";
-import { getLocal , removeLocal} from "../utils/storage";
+import { getLocal, removeLocal } from "../utils/storage";
 import { handleError } from "../utils/handleError";
 
 const API = axios.create({
-baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
   headers: { "Content-Type": "application/json" },
   timeout: 10000,
 });
@@ -22,14 +22,15 @@ API.interceptors.request.use((req) => {
 API.interceptors.response.use(
   (res) => res,
   (err) => {
-   const message = handleError(err);
-console.error("API Error:", message);
- //  Auto logout if unauthorized
- if (err.response?.status === 401) {
+    const message = handleError(err);
+    console.error("[v0] API Error:", message);
+    // Auto logout if unauthorized
+    if (err.response?.status === 401) {
       removeLocal("token");
+      removeLocal("user");
       window.location.href = "/login";
     }
-return Promise.reject(message);
+    return Promise.reject(message);
   }
 );
 
