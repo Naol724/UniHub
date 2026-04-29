@@ -1,6 +1,6 @@
 // backend/utils/jwt.js
 
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
 
 // 🔐 Generate Token
 const generateToken = (payload) => {
@@ -18,7 +18,7 @@ const verifyToken = (token) => {
   }
 };
 
-module.exports = {
+export {
   generateToken,
   verifyToken,
 };

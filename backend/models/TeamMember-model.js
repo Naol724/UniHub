@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const memberSchema = new mongoose.Schema({
     userID: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
@@ -7,4 +7,4 @@ const memberSchema = new mongoose.Schema({
     joinedAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model("TeamMember", memberSchema);
+export default mongoose.model("TeamMember", memberSchema);

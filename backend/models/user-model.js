@@ -1,6 +1,7 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 
-const userSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema({
     firstName:    { type: String, trim: true },
     lastName:     { type: String, trim: true },
     first_name:   { type: String, trim: true },
@@ -23,4 +24,4 @@ const userSchema = new mongoose.Schema({
     lastLogin:    { type: Date }
 }, { timestamps: true });
 
-module.exports = mongoose.models.User || mongoose.model("User", userSchema);
+export default mongoose.model("User", UserSchema);

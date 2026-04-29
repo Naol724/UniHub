@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const messageSchema = new mongoose.Schema({
     roomID:       { type: mongoose.Schema.Types.ObjectId, ref: "Room" },
@@ -9,4 +9,4 @@ const messageSchema = new mongoose.Schema({
     created_at:   { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.models.Message || mongoose.model("Message", messageSchema);
+export default mongoose.models.Message || mongoose.model("Message", messageSchema);

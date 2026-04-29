@@ -1,8 +1,8 @@
-const asyncHandler = require('../utils/asyncHandler');
-const ApiError = require('../utils/ApiError');
-const Task = require('../models/Task');
-const Team = require('../models/Team');
-const User = require('../models/User');
+import asyncHandler from '../utils/asyncHandler.js';
+import ApiError from '../utils/ApiError.js';
+import Task from '../models/Task.js';
+import Team from '../models/Team.js';
+import User from '../models/User.js';
 
 // @desc    Create a new task
 // @route   POST /api/tasks
@@ -240,7 +240,7 @@ const deleteTask = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = {
+export {
   createTask,
   getTasksForTeam,
   getTaskById,

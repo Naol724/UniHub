@@ -149,4 +149,4 @@ const checkUserRole = async (req, res) => {
     }
 };
 
-module.exports = { createTeam, getTeams, getTeamById, updateTeam, deleteTeam, addMember, removeMember, getTeamMembers, updateMemberRole, checkUserRole };
+export { createTeam, getTeams, getTeamById, updateTeam, deleteTeam, addMember, removeMember, getTeamMembers, updateMemberRole, checkUserRole };

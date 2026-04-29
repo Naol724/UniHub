@@ -1,12 +1,12 @@
-const express = require('express');
-const {
+import express from 'express';
+import {
   getUserNotifications,
   getUnreadCount,
   markAsRead,
   markAllAsRead,
   deleteNotification
-} = require('../controllers/notificationController');
-const { protect } = require('../middleware/authMiddleware');
+} from '../controllers/notificationController.js';
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -20,4 +20,4 @@ router.patch('/:id/read', markAsRead); // Mark single notification as read
 router.patch('/read-all', markAllAsRead); // Mark all notifications as read
 router.delete('/:id', deleteNotification); // Delete a notification
 
-module.exports = router;
+export default router;

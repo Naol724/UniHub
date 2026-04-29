@@ -1,7 +1,7 @@
 // backend/middleware/validate.middleware.js
 
-const { validationResult } = require("express-validator");
-const ApiError = require("../utils/ApiError");
+import { validationResult } from "express-validator";
+import ApiError from "../utils/ApiError.js";
 
 // Validation middleware
 const validate = (req, res, next) => {
@@ -57,7 +57,7 @@ const validationRules = {
   ]
 };
 
-module.exports = {
+export {
   validate,
   validationRules
 };

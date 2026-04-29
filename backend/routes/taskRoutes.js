@@ -1,13 +1,13 @@
-const express = require('express');
-const {
+import express from 'express';
+import {
   createTask,
   getTasksForTeam,
   getTaskById,
   updateTask,
   updateTaskStatus,
   deleteTask
-} = require('../controllers/taskController');
-const { protect } = require('../middleware/authMiddleware');
+} from '../controllers/taskController.js';
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -22,4 +22,4 @@ router.put('/:id', updateTask); // Update task details
 router.put('/:id/status', updateTaskStatus); // Update task status (move between columns)
 router.delete('/:id', deleteTask); // Delete task
 
-module.exports = router;
+export default router;

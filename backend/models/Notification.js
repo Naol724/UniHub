@@ -1,5 +1,5 @@
 // backend/models/Notification.js
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const notificationSchema = new mongoose.Schema(
   {
@@ -342,4 +342,4 @@ notificationSchema.statics.createTeamNotification = function(type, recipientId, 
   });
 };
 
-module.exports = mongoose.model('Notification', notificationSchema);
+export default mongoose.model('Notification', notificationSchema);

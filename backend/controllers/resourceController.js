@@ -1,9 +1,9 @@
-const asyncHandler = require('../utils/asyncHandler');
-const ApiError = require('../utils/ApiError');
-const Resource = require('../models/Resource');
-const Team = require('../models/Team');
-const fs = require('fs').promises;
-const path = require('path');
+import asyncHandler from '../utils/asyncHandler.js';
+import ApiError from '../utils/ApiError.js';
+import Resource from '../models/Resource.js';
+import Team from '../models/Team.js';
+import fs from 'fs/promises';
+import path from 'path';
 
 // @desc    Upload a file to a team
 // @route   POST /api/resources
@@ -147,7 +147,7 @@ const deleteResource = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = {
+export {
   uploadResource,
   getResourcesForTeam,
   getResourceById,

@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const taskSchema = new mongoose.Schema({
     title:            { type: String, required: true },
@@ -16,4 +16,4 @@ const taskSchema = new mongoose.Schema({
 
 taskSchema.pre('save', function (next) { this.updatedAt = Date.now(); next(); });
 
-module.exports = mongoose.models.Task || mongoose.model("Task", taskSchema);
+export default mongoose.models.Task || mongoose.model("Task", taskSchema);

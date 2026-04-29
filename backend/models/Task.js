@@ -1,5 +1,5 @@
 // backend/models/Task.js
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const taskSchema = new mongoose.Schema(
   {
@@ -299,4 +299,4 @@ taskSchema.statics.findOverdue = function(teamId) {
     .sort({ dueDate: 1 });
 };
 
-module.exports = mongoose.model('Task', taskSchema);
+export default mongoose.model('Task', taskSchema);

@@ -1,7 +1,8 @@
-const User = require("../models/user-model");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-require("dotenv").config();
+import User from "../models/user-model.js";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || process.env.JWT_KEY_SECRET || "your_secret_key";
 
@@ -23,7 +24,7 @@ const formatUser = (user) => ({
 });
 
 // Register - accepts { firstName, lastName, email, password, confirmPassword }
-const userRegister = async (req, res) => {
+export const userRegister = async (req, res) => {
   const { firstName, lastName, email, password, password1, password2, confirmPassword, department } = req.body;
 
   const pass  = password  || password1;
@@ -71,7 +72,7 @@ const userRegister = async (req, res) => {
 };
 
 // Login - accepts { email, password }
-const userLogin = async (req, res) => {
+export const userLogin = async (req, res) => {
   const { email, password } = req.body;
   try {
     if (!email || !password)
@@ -99,7 +100,7 @@ const userLogin = async (req, res) => {
   }
 };
 
-const updateProfile = async (req, res) => {
+export const updateProfile = async (req, res) => {
   const { firstName, lastName, Bio, department, phone, location } = req.body;
   const { id } = req.params;
   try {
@@ -119,7 +120,7 @@ const updateProfile = async (req, res) => {
   }
 };
 
-const getUserProfile = async (req, res) => {
+export const getUserProfile = async (req, res) => {
   const { id } = req.params;
   try {
     const user = await User.findById(id).select("-password -passwordHash");
@@ -130,7 +131,7 @@ const getUserProfile = async (req, res) => {
   }
 };
 
-const uploadProfileImage = async (req, res) => {
+export const uploadProfileImage = async (req, res) => {
   const { id } = req.params;
   try {
     if (!req.file) return res.status(400).json({ success: false, message: "No file uploaded" });
@@ -143,7 +144,7 @@ const uploadProfileImage = async (req, res) => {
   }
 };
 
-const changePassword = async (req, res) => {
+export const changePassword = async (req, res) => {
   const { id } = req.params;
   const { currentPassword, newPassword } = req.body;
   try {
@@ -164,7 +165,7 @@ const changePassword = async (req, res) => {
   }
 };
 
-const getAllUsers = async (req, res) => {
+export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find({}).select("-password -passwordHash");
     return res.json({ success: true, users: users.map(formatUser) });
@@ -173,7 +174,7 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-const searchUsers = async (req, res) => {
+export const searchUsers = async (req, res) => {
   const { search } = req.query;
   try {
     let query = {};
@@ -188,4 +189,3 @@ const searchUsers = async (req, res) => {
   }
 };
 
-module.exports = { userRegister, userLogin, updateProfile, getUserProfile, uploadProfileImage, changePassword, getAllUsers, searchUsers };

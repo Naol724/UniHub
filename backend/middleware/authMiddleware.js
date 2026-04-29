@@ -1,8 +1,8 @@
-const jwt = require("jsonwebtoken");
-const User = require("../models/user-model");
-const TeamMember = require("../models/TeamMember-model");
+import jwt from "jsonwebtoken";
+import User from "../models/user-model.js";
+import TeamMember from "../models/TeamMember-model.js";
 
-const protect = async (req, res, next) => {
+export const protect = async (req, res, next) => {
   let token;
   try {
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer'))
@@ -21,18 +21,18 @@ const protect = async (req, res, next) => {
   }
 };
 
-const authorize = (...roles) => (req, res, next) => {
+export const authorize = (...roles) => (req, res, next) => {
   if (!req.user) return res.status(401).json({ success: false, message: "Not authenticated" });
   if (!roles.includes(req.user.role)) return res.status(403).json({ success: false, message: `Role ${req.user.role} is not authorized` });
   next();
 };
 
-const isAdmin = (req, res, next) => {
+export const isAdmin = (req, res, next) => {
   if (!req.user || req.user.role !== 'admin') return res.status(403).json({ success: false, message: "Admin access required" });
   next();
 };
 
-const optionalAuth = async (req, res, next) => {
+export const optionalAuth = async (req, res, next) => {
   try {
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
       const token = req.headers.authorization.split(' ')[1];
@@ -43,7 +43,7 @@ const optionalAuth = async (req, res, next) => {
   next();
 };
 
-const isTeamOwnerOrAdmin = async (req, res, next) => {
+export const isTeamOwnerOrAdmin = async (req, res, next) => {
   try {
     const teamId = req.params.teamId || req.body.teamID || req.body.teamId;
     const userId = req.user?.id;
@@ -59,7 +59,7 @@ const isTeamOwnerOrAdmin = async (req, res, next) => {
   }
 };
 
-const isTeamOwner = async (req, res, next) => {
+export const isTeamOwner = async (req, res, next) => {
   try {
     const { teamId } = req.params;
     const member = await TeamMember.findOne({ userID: req.user.id, teamId });
@@ -72,7 +72,7 @@ const isTeamOwner = async (req, res, next) => {
   }
 };
 
-const isTeamMember = async (req, res, next) => {
+export const isTeamMember = async (req, res, next) => {
   try {
     const { teamId } = req.params;
     const member = await TeamMember.findOne({ userID: req.user.id, teamId });
@@ -83,5 +83,3 @@ const isTeamMember = async (req, res, next) => {
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
-module.exports = { protect, authorize, isAdmin, optionalAuth, isTeamOwnerOrAdmin, isTeamOwner, isTeamMember };

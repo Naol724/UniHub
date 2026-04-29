@@ -1,6 +1,6 @@
-const asyncHandler = require('../utils/asyncHandler');
-const ApiError = require('../utils/ApiError');
-const Notification = require('../models/Notification');
+import asyncHandler from '../utils/asyncHandler.js';
+import ApiError from '../utils/ApiError.js';
+import Notification from '../models/Notification.js';
 
 // @desc    Get all notifications for current user
 // @route   GET /api/notifications
@@ -93,7 +93,7 @@ const deleteNotification = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = {
+export {
   getUserNotifications,
   getUnreadCount,
   markAsRead,

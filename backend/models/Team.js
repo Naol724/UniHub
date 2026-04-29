@@ -1,5 +1,5 @@
 // backend/models/Team.js
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const teamSchema = new mongoose.Schema(
   {
@@ -195,4 +195,4 @@ teamSchema.statics.findByInviteCode = function(inviteCode) {
     .populate('members.user', 'name email');
 };
 
-module.exports = mongoose.model('Team', teamSchema);
+export default mongoose.model('Team', teamSchema);

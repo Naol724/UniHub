@@ -1,6 +1,6 @@
 // backend/middleware/role.middleware.js
 
-const ApiError = require("../utils/ApiError");
+import ApiError from "../utils/ApiError.js";
 
 // 🛡️ Authorization Middleware
 const authorize = (...allowedRoles) => {
@@ -25,4 +25,4 @@ const authorize = (...allowedRoles) => {
   };
 };
 
-module.exports = { authorize };
+export { authorize };
