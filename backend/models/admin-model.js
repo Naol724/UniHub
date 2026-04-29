@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const PERMISSIONS = {
     VIEW_USERS: 'view_users', CREATE_USER: 'create_user', EDIT_USER: 'edit_user', DELETE_USER: 'delete_user',
@@ -43,6 +43,7 @@ adminSchema.methods.toJSON = function () {
     return admin;
 };
 
-module.exports = mongoose.model("Admin", adminSchema);
-module.exports.PERMISSIONS = PERMISSIONS;
-module.exports.ROLE_PERMISSIONS = ROLE_PERMISSIONS;
+const Admin = mongoose.model("Admin", adminSchema);
+
+export default Admin;
+export { PERMISSIONS, ROLE_PERMISSIONS };

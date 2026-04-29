@@ -1,2 +1,2 @@
 // Redirect to user-model.js to avoid duplicate model registration
-module.exports = require("./user-model");
+export { default } from "./user-model.js";

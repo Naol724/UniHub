@@ -1,13 +1,13 @@
-const express = require('express');
-const multer = require('multer');
-const path = require('path');
-const {
+import express from 'express';
+import multer from 'multer';
+import path from 'path';
+import {
   uploadResource,
   getResourcesForTeam,
   getResourceById,
   deleteResource
-} = require('../controllers/resourceController');
-const { protect } = require('../middleware/authMiddleware');
+} from '../controllers/resourceController.js';
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -60,4 +60,4 @@ router.get('/team/:teamId', getResourcesForTeam); // Get all resources for team
 router.get('/:id', getResourceById); // Get single resource by ID
 router.delete('/:id', deleteResource); // Delete resource
 
-module.exports = router;
+export default router;

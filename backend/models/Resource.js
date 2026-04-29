@@ -1,5 +1,5 @@
 // backend/models/Resource.js
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const resourceSchema = new mongoose.Schema(
   {
@@ -346,4 +346,4 @@ resourceSchema.statics.findRecentlyUploaded = function(teamId, limit = 10) {
     .limit(limit);
 };
 
-module.exports = mongoose.model('Resource', resourceSchema);
+export default mongoose.model('Resource', resourceSchema);

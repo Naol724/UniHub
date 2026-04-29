@@ -1,6 +1,6 @@
-const User = require("../models/user-model");
+import User from "../models/user-model.js";
 
-const getAllUsers = async (req, res) => {
+export const getAllUsers = async (req, res) => {
     try {
         const users = await User.find({}, "first_name last_name email _id isActive").lean();
         return res.status(200).json({ success: true, users });
@@ -9,7 +9,7 @@ const getAllUsers = async (req, res) => {
     }
 };
 
-const searchUsers = async (req, res) => {
+export const searchUsers = async (req, res) => {
     const { search } = req.query;
     try {
         let query = {};
@@ -23,7 +23,7 @@ const searchUsers = async (req, res) => {
     }
 };
 
-const getUserById = async (req, res) => {
+export const getUserById = async (req, res) => {
     const { userId } = req.params;
     try {
         const user = await User.findById(userId, "first_name last_name email _id isActive").lean();
@@ -34,4 +34,3 @@ const getUserById = async (req, res) => {
     }
 };
 
-module.exports = { getAllUsers, searchUsers, getUserById };

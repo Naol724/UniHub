@@ -1,8 +1,8 @@
 // backend/middleware/auth.middleware.js
 
-const jwt = require("jsonwebtoken");
-const User = require("../models/User");
-const ApiError = require("../utils/ApiError");
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
+import ApiError from "../utils/ApiError.js";
 
 // 🔐 Authentication Middleware (PROTECT ROUTES)
 const protect = async (req, res, next) => {
@@ -96,7 +96,7 @@ const isTeamLeader = (req, res, next) => {
   next();
 };
 
-module.exports = { 
+export { 
   protect, 
   restrictTo, 
   optionalAuth, 

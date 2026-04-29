@@ -1,7 +1,8 @@
-const express = require("express");
+import express from "express";
+import jwt from "jsonwebtoken";
+import User from "../models/user-model.js";
+
 const router = express.Router();
-const jwt = require("jsonwebtoken");
-const User = require("../models/user-model");
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key";
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
@@ -94,5 +95,5 @@ router.get("/callback", (req, res, next) => {
   })(req, res, next);
 });
 
-module.exports = router;
-module.exports.initPassport = initPassport;
+export { initPassport };
+export default router;

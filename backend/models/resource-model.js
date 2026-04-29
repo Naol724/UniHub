@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const resourceSchema = new mongoose.Schema({
     fileName:   { type: String },
@@ -8,4 +8,4 @@ const resourceSchema = new mongoose.Schema({
     TeamId:     { type: mongoose.Schema.Types.ObjectId, ref: "Team", required: true }
 });
 
-module.exports = mongoose.model("Resource", resourceSchema);
+export default mongoose.model("Resource", resourceSchema);

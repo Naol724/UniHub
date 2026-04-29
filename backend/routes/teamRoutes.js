@@ -1,5 +1,5 @@
-const express = require('express');
-const {
+import express from 'express';
+import {
   createTeam,
   getUserTeams,
   getTeamById,
@@ -8,8 +8,8 @@ const {
   updateTeam,
   removeMember,
   deleteTeam
-} = require('../controllers/teamController');
-const { protect } = require('../middleware/authMiddleware');
+} from '../controllers/teamController.js';
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -30,4 +30,4 @@ router.post('/join', joinTeam); // Join team via invite code
 // Remove member from team (leader only)
 router.delete('/:id/members/:memberId', removeMember);
 
-module.exports = router;
+export default router;

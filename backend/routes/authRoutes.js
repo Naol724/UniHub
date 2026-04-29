@@ -1,10 +1,11 @@
-const express = require("express");
+import express from "express";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import { protect, optionalAuth, authorize } from "../middleware/authMiddleware.js";
+import { userRegister, userLogin, updateProfile, getUserProfile, uploadProfileImage, changePassword, getAllUsers, searchUsers } from "../controllers/authController.js";
+
 const router = express.Router();
-const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
-const { protect, optionalAuth, authorize } = require("../middleware/authMiddleware");
-const { userRegister, userLogin, updateProfile, getUserProfile, uploadProfileImage, changePassword, getAllUsers, searchUsers } = require("../controllers/authController");
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -36,4 +37,4 @@ router.post("/profile/:id/change-password", changePassword);
 router.get("/users", getAllUsers);
 router.get("/users/search", searchUsers);
 
-module.exports = router;
+export default router;

@@ -1,40 +1,34 @@
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiError from '../utils/ApiError.js';
 import Team from '../models/Team.js';
-import User from '../models/user-model.js';
+import User from '../models/User.js';
+
+// Generate a random invite code
+const generateInviteCode = () => {
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+};
 
 // @desc    Create a new team
 // @route   POST /api/teams
-// @access  Private
+// @access  Private (leader only - creator becomes leader)
 export const createTeam = asyncHandler(async (req, res) => {
   const { name, description } = req.body;
 
+  // Validate required fields
   if (!name) {
     throw new ApiError(400, 'Team name is required');
   }
 
-  // Check if team name already exists for this user
-  const existingTeam = await Team.findOne({
-    name: name.trim(),
-    leader: req.user._id
-  });
-
-  if (existingTeam) {
-    throw new ApiError(400, 'You already have a team with this name');
-  }
-
-  // Generate unique invite code
-  const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-
+  // Create team with current user as leader and member
   const team = await Team.create({
-    name: name.trim(),
-    description: description?.trim() || '',
+    name,
+    description: description || '',
     leader: req.user._id,
     members: [req.user._id],
-    inviteCode
+    inviteCode: generateInviteCode()
   });
 
-  // Populate for response
+  // Populate members for response
   await team.populate('members', 'name email');
   await team.populate('leader', 'name email');
 
@@ -45,7 +39,7 @@ export const createTeam = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Get user's teams
+// @desc    Get all teams for current user
 // @route   GET /api/teams
 // @access  Private
 export const getUserTeams = asyncHandler(async (req, res) => {
@@ -263,3 +257,14 @@ export const deleteTeam = asyncHandler(async (req, res) => {
     data: {}
   });
 });
+
+export {
+  createTeam,
+  getUserTeams,
+  getTeamById,
+  inviteMember,
+  joinTeam,
+  updateTeam,
+  removeMember,
+  deleteTeam
+};

@@ -8,4 +8,4 @@ const sendResponse = (res, statusCode, success, message, data = null) => {
   });
 };
 
-module.exports = sendResponse;
+export default sendResponse;
