@@ -1,369 +1,104 @@
 // frontend/src/pages/Teams/Teams.jsx
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useAuth } from '../../contexts/AuthContext';
-import Card from '../../components/Card';
-import Button from '../../components/Button';
+import useAuthGate from '../../hooks/useAuthGate';
 
 const Teams = () => {
   const { theme } = useTheme();
-  const { user } = useAuth();
+  const { gate, AuthGate } = useAuthGate();
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  // Mock data - replace with API call
   useEffect(() => {
     const mockTeams = [
-      {
-        id: 1,
-        name: 'UI/UX Design Team',
-        description: 'Designing beautiful user experiences',
-        icon: 'UI',
-        color: theme.colors.primary,
-        members: [
-          { id: 1, name: 'Naol Gonfa', initials: 'NG', avatar: null },
-          { id: 2, name: 'Asefa Niguse', initials: 'AN', avatar: null },
-          { id: 3, name: 'Ermiyas Abebe', initials: 'EA', avatar: null },
-          { id: 4, name: 'Tola Fayisa', initials: 'TF', avatar: null }
-        ],
-        tasksCompleted: 8,
-        totalTasks: 12,
-        userRole: 'Leader'
-      },
-      {
-        id: 2,
-        name: 'Backend Development',
-        description: 'Building robust APIs and databases',
-        icon: 'BE',
-        color: theme.colors.secondary,
-        members: [
-          { id: 5, name: 'Fikru Bekele', initials: 'FB', avatar: null },
-          { id: 6, name: 'Yisiyaq Gezehany', initials: 'YG', avatar: null },
-          { id: 7, name: 'Abebe Alemu', initials: 'AA', avatar: null }
-        ],
-        tasksCompleted: 14,
-        totalTasks: 18,
-        userRole: 'Member'
-      },
-      {
-        id: 3,
-        name: 'Research & Analysis',
-        description: 'User research and data analysis',
-        icon: 'RE',
-        color: theme.colors.success,
-        members: [
-          { id: 8, name: 'Mekonnen Niguse', initials: 'MN', avatar: null },
-          { id: 9, name: 'Mahlet Ibrahim', initials: 'MI', avatar: null }
-        ],
-        tasksCompleted: 4,
-        totalTasks: 6,
-        userRole: 'Member'
-      },
-      {
-        id: 4,
-        name: 'Mobile Development',
-        description: 'Cross-platform mobile applications',
-        icon: 'MD',
-        color: theme.colors.warning,
-        members: [
-          { id: 10, name: 'Birhanu Endris', initials: 'BE', avatar: null },
-          { id: 11, name: 'Rahel Seid', initials: 'RS', avatar: null },
-          { id: 12, name: 'Bethelehem Mekonnen', initials: 'BM', avatar: null }
-        ],
-        tasksCompleted: 9,
-        totalTasks: 15,
-        userRole: 'Member'
-      },
-      {
-        id: 5,
-        name: 'DevOps & Infrastructure',
-        description: 'Deployment pipelines and cloud',
-        icon: 'DO',
-        color: theme.colors.danger,
-        members: [
-          { id: 13, name: 'Alemayehu Niguse', initials: 'AN', avatar: null },
-          { id: 14, name: 'Ermiyas Abebe', initials: 'EA', avatar: null }
-        ],
-        tasksCompleted: 7,
-        totalTasks: 8,
-        userRole: 'Member'
-      }
+      { id: 1, name: 'UI/UX Design Team',      description: 'Designing beautiful user experiences',    icon: 'UI', color: theme.colors.primary,   members: [{ id: 1, name: 'Naol Gonfa', initials: 'NG' }, { id: 2, name: 'Asefa Niguse', initials: 'AN' }, { id: 3, name: 'Ermiyas Abebe', initials: 'EA' }, { id: 4, name: 'Tola Fayisa', initials: 'TF' }], tasksCompleted: 8,  totalTasks: 12, userRole: 'Leader' },
+      { id: 2, name: 'Backend Development',     description: 'Building robust APIs and databases',      icon: 'BE', color: theme.colors.secondary, members: [{ id: 5, name: 'Fikru Bekele', initials: 'FB' }, { id: 6, name: 'Yisiyaq Gezehany', initials: 'YG' }, { id: 7, name: 'Abebe Alemu', initials: 'AA' }], tasksCompleted: 14, totalTasks: 18, userRole: 'Member' },
+      { id: 3, name: 'Research & Analysis',     description: 'User research and data analysis',         icon: 'RE', color: theme.colors.success,   members: [{ id: 8, name: 'Mekonnen Niguse', initials: 'MN' }, { id: 9, name: 'Mahlet Ibrahim', initials: 'MI' }], tasksCompleted: 4,  totalTasks: 6,  userRole: 'Member' },
+      { id: 4, name: 'Mobile Development',      description: 'Cross-platform mobile applications',      icon: 'MD', color: theme.colors.warning,   members: [{ id: 10, name: 'Birhanu Endris', initials: 'BE' }, { id: 11, name: 'Rahel Seid', initials: 'RS' }, { id: 12, name: 'Bethelehem Mekonnen', initials: 'BM' }], tasksCompleted: 9,  totalTasks: 15, userRole: 'Member' },
+      { id: 5, name: 'DevOps & Infrastructure', description: 'Deployment pipelines and cloud',          icon: 'DO', color: theme.colors.danger,    members: [{ id: 13, name: 'Alemayehu Niguse', initials: 'AN' }, { id: 14, name: 'Ermiyas Abebe', initials: 'EA' }], tasksCompleted: 7,  totalTasks: 8,  userRole: 'Member' },
     ];
-
-    setTimeout(() => {
-      setTeams(mockTeams);
-      setLoading(false);
-    }, 1000);
+    setTimeout(() => { setTeams(mockTeams); setLoading(false); }, 600);
   }, []);
-
-  const pageStyles = {
-    padding: '20px',
-    backgroundColor: theme.colors.background,
-    color: theme.colors.text,
-    minHeight: '100vh'
-  };
-
-  const headerStyles = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '30px'
-  };
-
-  const titleStyles = {
-    fontSize: '28px',
-    fontWeight: '700',
-    color: theme.colors.text,
-    margin: '0 0 8px 0'
-  };
-
-  const subtitleStyles = {
-    fontSize: '16px',
-    color: theme.colors.textSecondary,
-    margin: '0'
-  };
-
-  const teamsGridStyles = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-    gap: '20px'
-  };
-
-  const teamCardStyles = {
-    position: 'relative',
-    padding: '24px',
-    backgroundColor: theme.colors.surface,
-    border: `1px solid ${theme.colors.border}`,
-    borderRadius: '12px',
-    boxShadow: `0 2px 8px ${theme.colors.shadow}`,
-    transition: 'all 0.3s ease',
-    cursor: 'pointer'
-  };
-
-  const teamIconStyles = (color) => ({
-    width: '48px',
-    height: '48px',
-    borderRadius: '12px',
-    backgroundColor: color,
-    color: '#fff',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '18px',
-    fontWeight: '700',
-    marginBottom: '16px'
-  });
-
-  const teamNameStyles = {
-    fontSize: '18px',
-    fontWeight: '700',
-    color: theme.colors.text,
-    marginBottom: '8px'
-  };
-
-  const teamDescStyles = {
-    fontSize: '14px',
-    color: theme.colors.textSecondary,
-    marginBottom: '16px',
-    lineHeight: '1.5'
-  };
-
-  const membersStyles = {
-    display: 'flex',
-    alignItems: 'center',
-    marginBottom: '12px'
-  };
-
-  const avatarStyles = {
-    width: '32px',
-    height: '32px',
-    borderRadius: '50%',
-    backgroundColor: theme.colors.primaryLight,
-    color: theme.colors.primary,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '12px',
-    fontWeight: '600',
-    border: `2px solid ${theme.colors.surface}`,
-    marginLeft: '-8px'
-  };
-
-  const firstAvatarStyles = {
-    ...avatarStyles,
-    marginLeft: '0'
-  };
-
-  const progressStyles = {
-    height: '6px',
-    backgroundColor: theme.colors.border,
-    borderRadius: '3px',
-    overflow: 'hidden',
-    marginBottom: '8px'
-  };
-
-  const progressFillStyles = (progress, color) => ({
-    height: '100%',
-    width: `${progress}%`,
-    backgroundColor: color,
-    borderRadius: '3px',
-    transition: 'width 0.3s ease'
-  });
-
-  const statsStyles = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    fontSize: '12px',
-    color: theme.colors.textSecondary
-  };
-
-  const badgeStyles = {
-    padding: '4px 8px',
-    borderRadius: '12px',
-    fontSize: '10px',
-    fontWeight: '600',
-    backgroundColor: theme.colors.primaryLight,
-    color: theme.colors.primary
-  };
 
   if (loading) {
     return (
-      <div style={pageStyles}>
-        <div style={{ textAlign: 'center', padding: '100px 0' }}>
-          <div>Loading teams...</div>
-        </div>
+      <div className="flex items-center justify-center py-24">
+        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div style={pageStyles}>
+    <div className="space-y-5">
+      <AuthGate />
+
       {/* Header */}
-      <div style={headerStyles}>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 style={titleStyles}>Teams</h1>
-          <p style={subtitleStyles}>Manage and collaborate with your project teams</p>
+          <h1 className="text-xl sm:text-2xl font-bold" style={{ color: theme.colors.text }}>Teams</h1>
+          <p className="text-sm mt-0.5" style={{ color: theme.colors.textSecondary }}>Manage and collaborate with your project teams</p>
         </div>
-        <Button
-          onClick={() => setShowCreateModal(true)}
-          style={{
-            backgroundColor: theme.colors.primary,
-            color: '#fff',
-            border: 'none',
-            padding: '10px 20px',
-            borderRadius: '8px',
-            fontSize: '14px',
-            fontWeight: '600',
-            cursor: 'pointer'
-          }}
+        <button
+          onClick={() => gate('create a team', () => setShowCreateModal(true))}
+          className="self-start sm:self-auto flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors hover:opacity-90"
+          style={{ backgroundColor: theme.colors.primary }}
         >
-          + Create Team
-        </Button>
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+          Create Team
+        </button>
       </div>
 
       {/* Teams Grid */}
-      <div style={teamsGridStyles}>
-        {teams.map((team) => (
-          <div
-            key={team.id}
-            style={teamCardStyles}
-            onMouseEnter={(e) => {
-              e.target.style.transform = 'translateY(-4px)';
-              e.target.style.boxShadow = `0 8px 24px ${theme.colors.shadow}`;
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = 'translateY(0)';
-              e.target.style.boxShadow = `0 2px 8px ${theme.colors.shadow}`;
-            }}
-          >
-            {/* Team Icon */}
-            <div style={teamIconStyles(team.color)}>
-              {team.icon}
-            </div>
-
-            {/* Team Name */}
-            <h3 style={teamNameStyles}>{team.name}</h3>
-
-            {/* Team Description */}
-            <p style={teamDescStyles}>{team.description}</p>
-
-            {/* Members */}
-            <div style={membersStyles}>
-              {team.members.slice(0, 5).map((member, index) => (
-                <div
-                  key={member.id}
-                  style={index === 0 ? firstAvatarStyles : avatarStyles}
-                  title={member.name}
-                >
-                  {member.initials}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        {teams.map((team) => {
+          const progress = Math.round((team.tasksCompleted / team.totalTasks) * 100);
+          return (
+            <div
+              key={team.id}
+              className="rounded-xl p-5 border transition-all duration-200 hover:-translate-y-1 hover:shadow-md cursor-pointer"
+              style={{ backgroundColor: theme.colors.surface, borderColor: theme.colors.border }}
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white font-bold text-base flex-shrink-0" style={{ backgroundColor: team.color }}>
+                  {team.icon}
                 </div>
-              ))}
-              {team.members.length > 5 && (
-                <div style={avatarStyles}>
-                  +{team.members.length - 5}
-                </div>
-              )}
-            </div>
-
-            {/* Progress Bar */}
-            <div style={progressStyles}>
-              <div
-                style={progressFillStyles(
-                  (team.tasksCompleted / team.totalTasks) * 100,
-                  team.color
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${team.color}20`, color: team.color }}>
+                  {team.userRole}
+                </span>
+              </div>
+              <h3 className="font-bold text-base mb-1 truncate" style={{ color: theme.colors.text }}>{team.name}</h3>
+              <p className="text-sm mb-4 line-clamp-2" style={{ color: theme.colors.textSecondary }}>{team.description}</p>
+              <div className="flex items-center gap-1 mb-3">
+                {team.members.slice(0, 5).map((m) => (
+                  <div key={m.id} title={m.name} className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold border-2 border-white -ml-1 first:ml-0" style={{ backgroundColor: `${team.color}30`, color: team.color }}>
+                    {m.initials}
+                  </div>
+                ))}
+                {team.members.length > 5 && (
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold border-2 border-white -ml-1 bg-gray-100 text-gray-600">+{team.members.length - 5}</div>
                 )}
-              />
+                <span className="ml-2 text-xs" style={{ color: theme.colors.textSecondary }}>{team.members.length} members</span>
+              </div>
+              <div className="h-1.5 rounded-full overflow-hidden mb-1.5" style={{ backgroundColor: theme.colors.border }}>
+                <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, backgroundColor: team.color }} />
+              </div>
+              <div className="flex justify-between text-xs" style={{ color: theme.colors.textSecondary }}>
+                <span>{team.tasksCompleted}/{team.totalTasks} tasks</span>
+                <span>{progress}%</span>
+              </div>
             </div>
-
-            {/* Stats */}
-            <div style={statsStyles}>
-              <span>{team.tasksCompleted}/{team.totalTasks} tasks</span>
-              <span style={badgeStyles}>{team.members.length} members</span>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Create Team Modal - Placeholder */}
+      {/* Create Team Modal */}
       {showCreateModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            backgroundColor: theme.colors.surface,
-            padding: '30px',
-            borderRadius: '12px',
-            maxWidth: '500px',
-            width: '90%'
-          }}>
-            <h2 style={{ margin: '0 0 20px 0' }}>Create New Team</h2>
-            <p style={{ color: theme.colors.textSecondary, marginBottom: '20px' }}>
-              Team creation functionality will be implemented here.
-            </p>
-            <Button
-              onClick={() => setShowCreateModal(false)}
-              style={{
-                backgroundColor: theme.colors.primary,
-                color: '#fff',
-                border: 'none',
-                padding: '10px 20px',
-                borderRadius: '8px',
-                cursor: 'pointer'
-              }}
-            >
-              Close
-            </Button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="w-full max-w-md rounded-xl p-6 shadow-xl" style={{ backgroundColor: theme.colors.surface }}>
+            <h2 className="text-lg font-bold mb-2" style={{ color: theme.colors.text }}>Create New Team</h2>
+            <p className="text-sm mb-5" style={{ color: theme.colors.textSecondary }}>Team creation functionality will be implemented here.</p>
+            <button onClick={() => setShowCreateModal(false)} className="px-4 py-2 rounded-lg text-sm font-semibold text-white" style={{ backgroundColor: theme.colors.primary }}>Close</button>
           </div>
         </div>
       )}

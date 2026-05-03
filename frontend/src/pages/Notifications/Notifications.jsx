@@ -1,332 +1,96 @@
 // frontend/src/pages/Notifications/Notifications.jsx
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useAuth } from '../../contexts/AuthContext';
-import Button from '../../components/Button';
 
 const Notifications = () => {
   const { theme } = useTheme();
-  const { user } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Mock notifications data - replace with API call
   useEffect(() => {
-    const mockNotifications = [
-      {
-        id: 1,
-        type: 'task_assigned',
-        title: 'Task Assigned',
-        message: 'Naol Gonfa assigned you: Design System Documentation',
-        timestamp: '2 minutes ago',
-        isRead: false,
-        icon: 'Task Assigned',
-        iconBg: '#ecfdf5',
-        iconColor: '#10b981',
-        actionUrl: '/tasks'
-      },
-      {
-        id: 2,
-        type: 'new_message',
-        title: 'New Message',
-        message: 'Asefa Niguse sent a message in UI/UX Team chat',
-        timestamp: '15 minutes ago',
-        isRead: false,
-        icon: 'New Message',
-        iconBg: '#eff6ff',
-        iconColor: '#3b82f6',
-        actionUrl: '/messages'
-      },
-      {
-        id: 3,
-        type: 'team_invitation',
-        title: 'Team Invitation',
-        message: 'You\'ve been invited to join Mobile Development team',
-        timestamp: '1 hour ago',
-        isRead: false,
-        icon: 'Team Invitation',
-        iconBg: '#f5f3ff',
-        iconColor: '#8b5cf6',
-        actionUrl: '/teams'
-      },
-      {
-        id: 4,
-        type: 'file_shared',
-        title: 'File Shared',
-        message: 'Ermiyas Abebe shared Project_Specs.pdf with Research Team',
-        timestamp: '2 hours ago',
-        isRead: true,
-        icon: 'File Shared',
-        iconBg: '#fffbeb',
-        iconColor: '#f59e0b',
-        actionUrl: '/resources'
-      },
-      {
-        id: 5,
-        type: 'deadline_reminder',
-        title: 'Deadline Reminder',
-        message: 'Database Schema Design is due today',
-        timestamp: '3 hours ago',
-        isRead: true,
-        icon: 'Deadline Reminder',
-        iconBg: '#fef2f2',
-        iconColor: '#ef4444',
-        actionUrl: '/tasks'
-      },
-      {
-        id: 6,
-        type: 'task_completed',
-        title: 'Task Completed',
-        message: 'Yisiyaq Gezehany completed: Project Setup',
-        timestamp: '5 hours ago',
-        isRead: true,
-        icon: 'Task Completed',
-        iconBg: '#ecfdf5',
-        iconColor: '#10b981',
-        actionUrl: '/tasks'
-      },
-      {
-        id: 7,
-        type: 'team_update',
-        title: 'Team Update',
-        message: 'Backend Team added new member: Abebe Alemu',
-        timestamp: '1 day ago',
-        isRead: true,
-        icon: 'Team Update',
-        iconBg: '#eff6ff',
-        iconColor: '#3b82f6',
-        actionUrl: '/teams'
-      },
-      {
-        id: 8,
-        type: 'mention',
-        title: 'You were mentioned',
-        message: 'Tola Fayisa mentioned you in a comment: "Great work on the dashboard!"',
-        timestamp: '2 days ago',
-        isRead: true,
-        icon: 'Mention',
-        iconBg: '#f5f3ff',
-        iconColor: '#8b5cf6',
-        actionUrl: '/tasks'
-      }
+    const mock = [
+      { id: 1, title: 'Task Assigned',      message: 'Naol Gonfa assigned you: Design System Documentation',              timestamp: '2 minutes ago',  isRead: false, iconBg: '#ecfdf5', iconColor: '#10b981', actionUrl: '/tasks'         },
+      { id: 2, title: 'New Message',        message: 'Asefa Niguse sent a message in UI/UX Team chat',                    timestamp: '15 minutes ago', isRead: false, iconBg: '#eff6ff', iconColor: '#3b82f6', actionUrl: '/messages'      },
+      { id: 3, title: 'Team Invitation',    message: "You've been invited to join Mobile Development team",               timestamp: '1 hour ago',     isRead: false, iconBg: '#f5f3ff', iconColor: '#8b5cf6', actionUrl: '/teams'         },
+      { id: 4, title: 'File Shared',        message: 'Ermiyas Abebe shared Project_Specs.pdf with Research Team',         timestamp: '2 hours ago',    isRead: true,  iconBg: '#fffbeb', iconColor: '#f59e0b', actionUrl: '/resources'     },
+      { id: 5, title: 'Deadline Reminder',  message: 'Database Schema Design is due today',                               timestamp: '3 hours ago',    isRead: true,  iconBg: '#fef2f2', iconColor: '#ef4444', actionUrl: '/tasks'         },
+      { id: 6, title: 'Task Completed',     message: 'Yisiyaq Gezehany completed: Project Setup',                         timestamp: '5 hours ago',    isRead: true,  iconBg: '#ecfdf5', iconColor: '#10b981', actionUrl: '/tasks'         },
+      { id: 7, title: 'Team Update',        message: 'Backend Team added new member: Abebe Alemu',                        timestamp: '1 day ago',      isRead: true,  iconBg: '#eff6ff', iconColor: '#3b82f6', actionUrl: '/teams'         },
+      { id: 8, title: 'You were mentioned', message: 'Tola Fayisa mentioned you in a comment: "Great work on the dashboard!"', timestamp: '2 days ago', isRead: true, iconBg: '#f5f3ff', iconColor: '#8b5cf6', actionUrl: '/tasks'    },
     ];
-
-    setTimeout(() => {
-      setNotifications(mockNotifications);
-      setLoading(false);
-    }, 1000);
+    setTimeout(() => { setNotifications(mock); setLoading(false); }, 800);
   }, []);
 
-  const pageStyles = {
-    padding: '20px',
-    backgroundColor: theme.colors.background,
-    color: theme.colors.text,
-    minHeight: '100vh'
-  };
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
-  const headerStyles = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '30px'
-  };
-
-  const titleStyles = {
-    fontSize: '28px',
-    fontWeight: '700',
-    color: theme.colors.text,
-    margin: '0 0 8px 0'
-  };
-
-  const subtitleStyles = {
-    fontSize: '16px',
-    color: theme.colors.textSecondary,
-    margin: '0'
-  };
-
-  const notificationListStyles = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px'
-  };
-
-  const notificationItemStyles = (isRead) => ({
-    display: 'flex',
-    gap: '12px',
-    padding: '16px',
-    backgroundColor: theme.colors.surface,
-    border: `1px solid ${theme.colors.border}`,
-    borderRadius: '12px',
-    boxShadow: `0 2px 8px ${theme.colors.shadow}`,
-    transition: 'all 0.2s ease',
-    cursor: 'pointer',
-    borderLeft: isRead ? 'none' : `3px solid ${theme.colors.primary}`,
-    backgroundColor: isRead ? theme.colors.surface : `${theme.colors.primary}10`
-  });
-
-  const notificationIconStyles = (bg, color) => ({
-    width: '48px',
-    height: '48px',
-    borderRadius: '12px',
-    backgroundColor: bg,
-    color: color,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '20px',
-    flexShrink: 0
-  });
-
-  const notificationContentStyles = {
-    flex: 1,
-    minWidth: 0
-  };
-
-  const notificationTitleStyles = {
-    fontSize: '14px',
-    fontWeight: '700',
-    color: theme.colors.text,
-    marginBottom: '4px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px'
-  };
-
-  const notificationMessageStyles = {
-    fontSize: '13px',
-    color: theme.colors.textSecondary,
-    lineHeight: '1.4',
-    marginBottom: '4px'
-  };
-
-  const notificationTimeStyles = {
-    fontSize: '11px',
-    color: theme.colors.textSecondary
-  };
-
-  const newBadgeStyles = {
-    backgroundColor: theme.colors.primary,
-    color: '#fff',
-    fontSize: '8px',
-    fontWeight: '600',
-    padding: '2px 6px',
-    borderRadius: '10px',
-    textTransform: 'uppercase'
-  };
-
-  const markAllReadStyles = {
-    backgroundColor: 'transparent',
-    color: theme.colors.text,
-    border: `1px solid ${theme.colors.border}`,
-    padding: '8px 16px',
-    borderRadius: '8px',
-    fontSize: '12px',
-    cursor: 'pointer'
-  };
-
-  const unreadCount = notifications.filter(n => !n.isRead).length;
-
-  const handleMarkAsRead = (id) => {
-    setNotifications(prevNotifications =>
-      prevNotifications.map(notification =>
-        notification.id === id ? { ...notification, isRead: true } : notification
-      )
-    );
-  };
-
-  const handleMarkAllAsRead = () => {
-    setNotifications(prevNotifications =>
-      prevNotifications.map(notification => ({ ...notification, isRead: true }))
-    );
-  };
-
-  const handleNotificationClick = (notification) => {
-    if (!notification.isRead) {
-      handleMarkAsRead(notification.id);
-    }
-    // Navigate to action URL (implement navigation logic)
-    console.log('Navigate to:', notification.actionUrl);
-  };
+  const markRead = (id) => setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, isRead: true } : n));
+  const markAllRead = () => setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
 
   if (loading) {
     return (
-      <div style={pageStyles}>
-        <div style={{ textAlign: 'center', padding: '100px 0' }}>
-          <div>Loading notifications...</div>
-        </div>
+      <div className="flex items-center justify-center py-24">
+        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div style={pageStyles}>
+    <div className="space-y-5 max-w-3xl">
       {/* Header */}
-      <div style={headerStyles}>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 style={titleStyles}>Notifications</h1>
-          <p style={subtitleStyles}>
-            {unreadCount > 0 ? `You have ${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}` : 'All caught up!'}
+          <h1 className="text-xl sm:text-2xl font-bold" style={{ color: theme.colors.text }}>Notifications</h1>
+          <p className="text-sm mt-0.5" style={{ color: theme.colors.textSecondary }}>
+            {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}` : 'All caught up!'}
           </p>
         </div>
         {unreadCount > 0 && (
-          <Button
-            onClick={handleMarkAllAsRead}
-            style={markAllReadStyles}
+          <button
+            onClick={markAllRead}
+            className="self-start sm:self-auto px-4 py-2 rounded-lg border text-sm font-medium transition-colors hover:bg-gray-50"
+            style={{ borderColor: theme.colors.border, color: theme.colors.text }}
           >
             Mark all as read
-          </Button>
+          </button>
         )}
       </div>
 
-      {/* Notifications List */}
-      <div style={notificationListStyles}>
-        {notifications.map((notification) => (
-          <div
-            key={notification.id}
-            style={notificationItemStyles(notification.isRead)}
-            onClick={() => handleNotificationClick(notification)}
-            onMouseEnter={(e) => {
-              e.target.style.transform = 'translateY(-2px)';
-              e.target.style.boxShadow = `0 4px 16px ${theme.colors.shadow}`;
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = 'translateY(0)';
-              e.target.style.boxShadow = `0 2px 8px ${theme.colors.shadow}`;
+      {/* List */}
+      <div className="space-y-2">
+        {notifications.map((n) => (
+          <button
+            key={n.id}
+            onClick={() => markRead(n.id)}
+            className="w-full flex items-start gap-3 p-4 rounded-xl border text-left transition-all hover:-translate-y-0.5 hover:shadow-sm"
+            style={{
+              backgroundColor: n.isRead ? theme.colors.surface : `${theme.colors.primary}08`,
+              borderColor: n.isRead ? theme.colors.border : theme.colors.primary,
+              borderLeftWidth: n.isRead ? '1px' : '3px',
             }}
           >
-            {/* Notification Icon */}
-            <div style={notificationIconStyles(notification.iconBg, notification.iconColor)}>
-              {notification.icon.charAt(0)}
+            {/* Icon */}
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-lg font-bold" style={{ backgroundColor: n.iconBg, color: n.iconColor }}>
+              {n.title.charAt(0)}
             </div>
 
-            {/* Notification Content */}
-            <div style={notificationContentStyles}>
-              <div style={notificationTitleStyles}>
-                {notification.title}
-                {!notification.isRead && (
-                  <span style={newBadgeStyles}>New</span>
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                <span className="text-sm font-semibold" style={{ color: theme.colors.text }}>{n.title}</span>
+                {!n.isRead && (
+                  <span className="text-xs font-bold px-1.5 py-0.5 rounded-full text-white" style={{ backgroundColor: theme.colors.primary }}>New</span>
                 )}
               </div>
-              <div style={notificationMessageStyles}>
-                {notification.message}
-              </div>
-              <div style={notificationTimeStyles}>
-                {notification.timestamp}
-              </div>
+              <p className="text-sm leading-relaxed" style={{ color: theme.colors.textSecondary }}>{n.message}</p>
+              <p className="text-xs mt-1" style={{ color: theme.colors.textSecondary }}>{n.timestamp}</p>
             </div>
-          </div>
+          </button>
         ))}
       </div>
 
-      {/* Empty State */}
       {notifications.length === 0 && (
-        <div style={{
-          textAlign: 'center',
-          padding: '60px 20px',
-          color: theme.colors.textSecondary
-        }}>
-          <div style={{ fontSize: '48px', marginBottom: '16px' }}>No notifications</div>
-          <p>You're all caught up! No new notifications to show.</p>
+        <div className="text-center py-16" style={{ color: theme.colors.textSecondary }}>
+          <p className="text-sm">No notifications to show.</p>
         </div>
       )}
     </div>
