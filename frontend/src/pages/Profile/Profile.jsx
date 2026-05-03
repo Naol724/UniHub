@@ -2,507 +2,189 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
-import Button from '../../components/Button';
-import Card from '../../components/Card';
-import FormInput from '../../components/FormInput';
+import useAuthGate from '../../hooks/useAuthGate';
 
 const Profile = () => {
   const { theme } = useTheme();
   const { user } = useAuth();
+  const { gate, AuthGate } = useAuthGate();
   const [profileData, setProfileData] = useState({
-    firstName: 'Naol',
-    lastName: 'Gonfa',
-    email: 'naol.gonfa@university.edu',
-    phone: '+251 91 234-5678',
+    firstName: 'Naol', lastName: 'Gonfa',
+    email: 'naol.gonfa@university.edu', phone: '+251 91 234-5678',
     location: 'Addis Ababa, Ethiopia',
     bio: 'Computer Science student passionate about building great user experiences and solving complex problems through technology.',
     skills: ['React', 'TypeScript', 'Node.js', 'UI/UX Design', 'Python', 'Database Design', 'Agile', 'Git'],
     teams: [
-      {
-        id: 1,
-        name: 'UI/UX Team',
-        role: 'Leader',
-        icon: 'UI',
-        color: theme.colors.primary
-      },
-      {
-        id: 2,
-        name: 'Backend Team',
-        role: 'Member',
-        icon: 'BE',
-        color: theme.colors.secondary
-      },
-      {
-        id: 3,
-        name: 'Research Team',
-        role: 'Member',
-        icon: 'RE',
-        color: theme.colors.success
-      }
+      { id: 1, name: 'UI/UX Team',    role: 'Leader', icon: 'UI', color: theme.colors.primary   },
+      { id: 2, name: 'Backend Team',  role: 'Member', icon: 'BE', color: theme.colors.secondary },
+      { id: 3, name: 'Research Team', role: 'Member', icon: 'RE', color: theme.colors.success   },
     ],
-    stats: {
-      tasksCompleted: 18,
-      totalTasks: 24,
-      teamsJoined: 3,
-      joinDate: 'January 2024'
-    }
+    stats: { tasksCompleted: 18, totalTasks: 24, teamsJoined: 3, joinDate: 'January 2024' },
   });
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Simulate loading profile data
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  }, []);
+  useEffect(() => { setTimeout(() => setLoading(false), 600); }, []);
 
-  const pageStyles = {
-    padding: '20px',
-    backgroundColor: theme.colors.background,
-    color: theme.colors.text,
-    minHeight: '100vh'
-  };
+  const handleChange = (field, value) => setProfileData((p) => ({ ...p, [field]: value }));
+  const handleSave = () => setIsEditing(false);
 
-  const headerStyles = {
-    marginBottom: '30px'
-  };
-
-  const titleStyles = {
-    fontSize: '28px',
-    fontWeight: '700',
-    color: theme.colors.text,
-    margin: '0 0 8px 0'
-  };
-
-  const subtitleStyles = {
-    fontSize: '16px',
-    color: theme.colors.textSecondary,
-    margin: '0'
-  };
-
-  const profileLayoutStyles = {
-    display: 'grid',
-    gridTemplateColumns: '300px 1fr',
-    gap: '30px'
-  };
-
-  const profileCardStyles = {
-    backgroundColor: theme.colors.surface,
-    border: `1px solid ${theme.colors.border}`,
-    borderRadius: '12px',
-    padding: '30px',
-    textAlign: 'center',
-    boxShadow: `0 2px 8px ${theme.colors.shadow}`
-  };
-
-  const avatarStyles = {
-    width: '100px',
-    height: '100px',
-    borderRadius: '50%',
-    backgroundColor: theme.colors.primaryLight,
-    color: theme.colors.primary,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '36px',
-    fontWeight: '700',
-    margin: '0 auto 20px'
-  };
-
-  const profileNameStyles = {
-    fontSize: '20px',
-    fontWeight: '700',
-    color: theme.colors.text,
-    marginBottom: '4px'
-  };
-
-  const profileRoleStyles = {
-    fontSize: '14px',
-    color: theme.colors.textSecondary,
-    marginBottom: '24px'
-  };
-
-  const statsStyles = {
-    display: 'flex',
-    justifyContent: 'space-around',
-    padding: '20px 0',
-    borderTop: `1px solid ${theme.colors.border}`,
-    borderBottom: `1px solid ${theme.colors.border}`,
-    marginBottom: '20px'
-  };
-
-  const statItemStyles = {
-    textAlign: 'center'
-  };
-
-  const statValueStyles = {
-    fontSize: '24px',
-    fontWeight: '800',
-    color: theme.colors.text,
-    marginBottom: '4px'
-  };
-
-  const statLabelStyles = {
-    fontSize: '12px',
-    color: theme.colors.textSecondary
-  };
-
-  const contactItemStyles = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    fontSize: '13px',
-    color: theme.colors.textSecondary,
-    marginBottom: '8px',
-    textAlign: 'left'
-  };
-
-  const contentSectionStyles = {
-    backgroundColor: theme.colors.surface,
-    border: `1px solid ${theme.colors.border}`,
-    borderRadius: '12px',
-    padding: '24px',
-    marginBottom: '20px',
-    boxShadow: `0 2px 8px ${theme.colors.shadow}`
-  };
-
-  const sectionTitleStyles = {
-    fontSize: '18px',
-    fontWeight: '700',
-    color: theme.colors.text,
-    marginBottom: '20px'
-  };
-
-  const formGridStyles = {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '16px',
-    marginBottom: '16px'
-  };
-
-  const inputStyles = {
-    backgroundColor: theme.colors.background,
-    border: `1px solid ${theme.colors.border}`,
-    borderRadius: '8px',
-    padding: '8px 12px',
-    fontSize: '14px',
-    color: theme.colors.text,
-    outline: 'none'
-  };
-
-  const textareaStyles = {
-    ...inputStyles,
-    minHeight: '80px',
-    resize: 'vertical',
-    fontFamily: 'inherit'
-  };
-
-  const skillsContainerStyles = {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '8px'
-  };
-
-  const skillStyles = {
-    backgroundColor: theme.colors.background,
-    border: `1px solid ${theme.colors.border}`,
-    color: theme.colors.text,
-    fontSize: '12px',
-    padding: '6px 12px',
-    borderRadius: '20px'
-  };
-
-  const teamItemStyles = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    padding: '12px',
-    backgroundColor: theme.colors.background,
-    border: `1px solid ${theme.colors.border}`,
-    borderRadius: '8px',
-    marginBottom: '8px'
-  };
-
-  const teamIconStyles = (color) => ({
-    width: '32px',
-    height: '32px',
-    borderRadius: '8px',
-    backgroundColor: color,
-    color: '#fff',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '12px',
-    fontWeight: '700'
-  });
-
-  const teamInfoStyles = {
-    flex: 1
-  };
-
-  const teamNameStyles = {
-    fontSize: '14px',
-    fontWeight: '600',
-    color: theme.colors.text,
-    marginBottom: '2px'
-  };
-
-  const teamRoleStyles = {
-    fontSize: '12px',
-    color: theme.colors.textSecondary
-  };
-
-  const actionButtonsStyles = {
-    display: 'flex',
-    gap: '12px',
-    marginTop: '20px'
-  };
-
-  const buttonStyles = (isPrimary) => ({
-    backgroundColor: isPrimary ? theme.colors.primary : 'transparent',
-    color: isPrimary ? '#fff' : theme.colors.text,
-    border: isPrimary ? 'none' : `1px solid ${theme.colors.border}`,
-    padding: '10px 20px',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer'
-  });
-
-  const handleInputChange = (field, value) => {
-    setProfileData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const handleSave = () => {
-    // Save profile logic here
-    console.log('Saving profile:', profileData);
-    setIsEditing(false);
-  };
-
-  const handleCancel = () => {
-    // Reset to original values
-    setIsEditing(false);
-  };
-
-  const getInitials = (firstName, lastName) => {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-  };
+  const initials = `${profileData.firstName.charAt(0)}${profileData.lastName.charAt(0)}`.toUpperCase();
 
   if (loading) {
     return (
-      <div style={pageStyles}>
-        <div style={{ textAlign: 'center', padding: '100px 0' }}>
-          <div>Loading profile...</div>
-        </div>
+      <div className="flex items-center justify-center py-24">
+        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
+  const inputCls = `w-full px-3 py-2 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-blue-500`;
+  const inputStyle = { backgroundColor: theme.colors.background, borderColor: theme.colors.border, color: theme.colors.text };
+
   return (
-    <div style={pageStyles}>
+    <div className="space-y-5">
+      <AuthGate />
       {/* Header */}
-      <div style={headerStyles}>
-        <h1 style={titleStyles}>Profile</h1>
-        <p style={subtitleStyles}>Manage your personal information and preferences</p>
+      <div>
+        <h1 className="text-xl sm:text-2xl font-bold" style={{ color: theme.colors.text }}>Profile</h1>
+        <p className="text-sm mt-0.5" style={{ color: theme.colors.textSecondary }}>Manage your personal information and preferences</p>
       </div>
 
-      {/* Profile Layout */}
-      <div style={profileLayoutStyles}>
-        {/* Profile Card */}
-        <div style={profileCardStyles}>
-          {/* Avatar */}
-          <div style={avatarStyles}>
-            {getInitials(profileData.firstName, profileData.lastName)}
-          </div>
+      {/* Layout: stacked on mobile, side-by-side on lg */}
+      <div className="flex flex-col lg:flex-row gap-5">
 
-          {/* Name and Role */}
-          <h2 style={profileNameStyles}>
-            {profileData.firstName} {profileData.lastName}
-          </h2>
-          <p style={profileRoleStyles}>Computer Science Student</p>
+        {/* Profile card */}
+        <div
+          className="w-full lg:w-72 xl:w-80 flex-shrink-0 rounded-xl border p-6 text-center"
+          style={{ backgroundColor: theme.colors.surface, borderColor: theme.colors.border }}
+        >
+          {/* Avatar */}
+          <div className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center text-3xl font-bold" style={{ backgroundColor: theme.colors.primaryLight, color: theme.colors.primary }}>
+            {initials}
+          </div>
+          <h2 className="text-lg font-bold mb-0.5" style={{ color: theme.colors.text }}>{profileData.firstName} {profileData.lastName}</h2>
+          <p className="text-sm mb-5" style={{ color: theme.colors.textSecondary }}>Computer Science Student</p>
 
           {/* Stats */}
-          <div style={statsStyles}>
-            <div style={statItemStyles}>
-              <div style={statValueStyles}>{profileData.stats.tasksCompleted}</div>
-              <div style={statLabelStyles}>Tasks Done</div>
-            </div>
-            <div style={statItemStyles}>
-              <div style={statValueStyles}>{profileData.stats.teamsJoined}</div>
-              <div style={statLabelStyles}>Teams</div>
-            </div>
-            <div style={statItemStyles}>
-              <div style={statValueStyles}>{profileData.stats.totalTasks}</div>
-              <div style={statLabelStyles}>Total Tasks</div>
-            </div>
+          <div className="grid grid-cols-3 gap-2 py-4 border-y mb-5" style={{ borderColor: theme.colors.border }}>
+            {[
+              { value: profileData.stats.tasksCompleted, label: 'Done' },
+              { value: profileData.stats.teamsJoined,    label: 'Teams' },
+              { value: profileData.stats.totalTasks,     label: 'Total' },
+            ].map((s) => (
+              <div key={s.label}>
+                <p className="text-xl font-extrabold" style={{ color: theme.colors.text }}>{s.value}</p>
+                <p className="text-xs" style={{ color: theme.colors.textSecondary }}>{s.label}</p>
+              </div>
+            ))}
           </div>
 
-          {/* Contact Information */}
-          <div>
-            <div style={contactItemStyles}>
-              <span>email</span>
-              <span>{profileData.email}</span>
-            </div>
-            <div style={contactItemStyles}>
-              <span>phone</span>
-              <span>{profileData.phone}</span>
-            </div>
-            <div style={contactItemStyles}>
-              <span>location</span>
-              <span>{profileData.location}</span>
-            </div>
-            <div style={contactItemStyles}>
-              <span>calendar</span>
-              <span>Joined {profileData.stats.joinDate}</span>
-            </div>
+          {/* Contact */}
+          <div className="space-y-2 text-left">
+            {[
+              { label: 'Email',    value: profileData.email    },
+              { label: 'Phone',    value: profileData.phone    },
+              { label: 'Location', value: profileData.location },
+              { label: 'Joined',   value: profileData.stats.joinDate },
+            ].map((c) => (
+              <div key={c.label} className="flex gap-2 text-xs">
+                <span className="font-semibold w-16 flex-shrink-0" style={{ color: theme.colors.textSecondary }}>{c.label}</span>
+                <span className="truncate" style={{ color: theme.colors.text }}>{c.value}</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Content Sections */}
-        <div>
-          {/* Edit Profile Section */}
-          <div style={contentSectionStyles}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3 style={sectionTitleStyles}>Edit Profile</h3>
+        {/* Content sections */}
+        <div className="flex-1 min-w-0 space-y-4">
+
+          {/* Edit Profile */}
+          <div className="rounded-xl border p-5" style={{ backgroundColor: theme.colors.surface, borderColor: theme.colors.border }}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-base" style={{ color: theme.colors.text }}>Edit Profile</h3>
               {!isEditing && (
-                <Button
-                  onClick={() => setIsEditing(true)}
-                  style={buttonStyles(false)}
-                >
+                <button onClick={() => setIsEditing(true)} className="px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors hover:bg-gray-50" style={{ borderColor: theme.colors.border, color: theme.colors.text }}>
                   Edit
-                </Button>
+                </button>
               )}
             </div>
 
             {isEditing ? (
-              <div>
-                <div style={formGridStyles}>
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', display: 'block' }}>
-                      First Name
-                    </label>
-                    <input
-                      type="text"
-                      style={inputStyles}
-                      value={profileData.firstName}
-                      onChange={(e) => handleInputChange('firstName', e.target.value)}
-                    />
+                    <label className="block text-xs font-semibold mb-1" style={{ color: theme.colors.textSecondary }}>First Name</label>
+                    <input className={inputCls} style={inputStyle} value={profileData.firstName} onChange={(e) => handleChange('firstName', e.target.value)} />
                   </div>
                   <div>
-                    <label style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', display: 'block' }}>
-                      Last Name
-                    </label>
-                    <input
-                      type="text"
-                      style={inputStyles}
-                      value={profileData.lastName}
-                      onChange={(e) => handleInputChange('lastName', e.target.value)}
-                    />
+                    <label className="block text-xs font-semibold mb-1" style={{ color: theme.colors.textSecondary }}>Last Name</label>
+                    <input className={inputCls} style={inputStyle} value={profileData.lastName} onChange={(e) => handleChange('lastName', e.target.value)} />
                   </div>
                 </div>
-
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', display: 'block' }}>
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    style={inputStyles}
-                    value={profileData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                  />
+                <div>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: theme.colors.textSecondary }}>Email</label>
+                  <input type="email" className={inputCls} style={inputStyle} value={profileData.email} onChange={(e) => handleChange('email', e.target.value)} />
                 </div>
-
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', display: 'block' }}>
-                    Bio
-                  </label>
-                  <textarea
-                    style={textareaStyles}
-                    value={profileData.bio}
-                    onChange={(e) => handleInputChange('bio', e.target.value)}
-                  />
+                <div>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: theme.colors.textSecondary }}>Bio</label>
+                  <textarea className={inputCls} style={{ ...inputStyle, resize: 'vertical' }} rows={3} value={profileData.bio} onChange={(e) => handleChange('bio', e.target.value)} />
                 </div>
-
-                <div style={actionButtonsStyles}>
-                  <Button
-                    onClick={handleSave}
-                    style={buttonStyles(true)}
-                  >
-                    Save Changes
-                  </Button>
-                  <Button
-                    onClick={handleCancel}
-                    style={buttonStyles(false)}
-                  >
-                    Cancel
-                  </Button>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <button onClick={handleSave} className="px-4 py-2 rounded-lg text-sm font-semibold text-white" style={{ backgroundColor: theme.colors.primary }}>Save Changes</button>
+                  <button onClick={() => setIsEditing(false)} className="px-4 py-2 rounded-lg border text-sm font-medium" style={{ borderColor: theme.colors.border, color: theme.colors.text }}>Cancel</button>
                 </div>
               </div>
             ) : (
-              <div>
-                <div style={formGridStyles}>
-                  <div>
-                    <div style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px' }}>First Name</div>
-                    <div style={{ padding: '8px 12px', backgroundColor: theme.colors.background, borderRadius: '8px' }}>
-                      {profileData.firstName}
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {[{ label: 'First Name', value: profileData.firstName }, { label: 'Last Name', value: profileData.lastName }].map((f) => (
+                    <div key={f.label}>
+                      <p className="text-xs font-semibold mb-1" style={{ color: theme.colors.textSecondary }}>{f.label}</p>
+                      <div className="px-3 py-2 rounded-lg text-sm" style={{ backgroundColor: theme.colors.background, color: theme.colors.text }}>{f.value}</div>
                     </div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px' }}>Last Name</div>
-                    <div style={{ padding: '8px 12px', backgroundColor: theme.colors.background, borderRadius: '8px' }}>
-                      {profileData.lastName}
-                    </div>
-                  </div>
+                  ))}
                 </div>
-
-                <div style={{ marginBottom: '16px' }}>
-                  <div style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px' }}>Email</div>
-                  <div style={{ padding: '8px 12px', backgroundColor: theme.colors.background, borderRadius: '8px' }}>
-                    {profileData.email}
-                  </div>
-                </div>
-
                 <div>
-                  <div style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px' }}>Bio</div>
-                  <div style={{ padding: '8px 12px', backgroundColor: theme.colors.background, borderRadius: '8px', lineHeight: '1.5' }}>
-                    {profileData.bio}
-                  </div>
+                  <p className="text-xs font-semibold mb-1" style={{ color: theme.colors.textSecondary }}>Email</p>
+                  <div className="px-3 py-2 rounded-lg text-sm truncate" style={{ backgroundColor: theme.colors.background, color: theme.colors.text }}>{profileData.email}</div>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold mb-1" style={{ color: theme.colors.textSecondary }}>Bio</p>
+                  <div className="px-3 py-2 rounded-lg text-sm leading-relaxed" style={{ backgroundColor: theme.colors.background, color: theme.colors.text }}>{profileData.bio}</div>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Skills Section */}
-          <div style={contentSectionStyles}>
-            <h3 style={sectionTitleStyles}>Skills</h3>
-            <div style={skillsContainerStyles}>
-              {profileData.skills.map((skill, index) => (
-                <span key={index} style={skillStyles}>
+          {/* Skills */}
+          <div className="rounded-xl border p-5" style={{ backgroundColor: theme.colors.surface, borderColor: theme.colors.border }}>
+            <h3 className="font-bold text-base mb-3" style={{ color: theme.colors.text }}>Skills</h3>
+            <div className="flex flex-wrap gap-2">
+              {profileData.skills.map((skill) => (
+                <span key={skill} className="px-3 py-1 rounded-full border text-xs font-medium" style={{ borderColor: theme.colors.border, color: theme.colors.text, backgroundColor: theme.colors.background }}>
                   {skill}
                 </span>
               ))}
             </div>
           </div>
 
-          {/* Teams Section */}
-          <div style={contentSectionStyles}>
-            <h3 style={sectionTitleStyles}>Teams</h3>
-            {profileData.teams.map((team) => (
-              <div key={team.id} style={teamItemStyles}>
-                <div style={teamIconStyles(team.color)}>
-                  {team.icon}
+          {/* Teams */}
+          <div className="rounded-xl border p-5" style={{ backgroundColor: theme.colors.surface, borderColor: theme.colors.border }}>
+            <h3 className="font-bold text-base mb-3" style={{ color: theme.colors.text }}>Teams</h3>
+            <div className="space-y-2">
+              {profileData.teams.map((team) => (
+                <div key={team.id} className="flex items-center gap-3 p-3 rounded-lg" style={{ backgroundColor: theme.colors.background, border: `1px solid ${theme.colors.border}` }}>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ backgroundColor: team.color }}>
+                    {team.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold truncate" style={{ color: theme.colors.text }}>{team.name}</p>
+                    <p className="text-xs" style={{ color: theme.colors.textSecondary }}>{team.role}</p>
+                  </div>
                 </div>
-                <div style={teamInfoStyles}>
-                  <div style={teamNameStyles}>{team.name}</div>
-                  <div style={teamRoleStyles}>{team.role}</div>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-// backend/controllers/settingsController.js
+﻿// backend/controllers/settingsController.js
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiError from '../utils/ApiError.js';
 import Settings from '../models/Settings.js';
@@ -10,7 +10,7 @@ import path from 'path';
 // @route   GET /api/settings
 // @access  Private
 export const getUserSettings = asyncHandler(async (req, res) => {
-  const settings = await Settings.getOrCreateSettings(req.user._id);
+  const settings = await Settings.getOrCreateSettings(req.user.id);
   
   res.status(200).json({
     success: true,
@@ -22,7 +22,7 @@ export const getUserSettings = asyncHandler(async (req, res) => {
 // @route   PUT /api/settings
 // @access  Private
 export const updateUserSettings = asyncHandler(async (req, res) => {
-  const settings = await Settings.getOrCreateSettings(req.user._id);
+  const settings = await Settings.getOrCreateSettings(req.user.id);
   
   const allowedSections = [
     'profile', 'privacy', 'notifications', 'appearance', 
@@ -41,7 +41,7 @@ export const updateUserSettings = asyncHandler(async (req, res) => {
   // Handle special cases
   if (req.body.profile) {
     // Update user's basic profile info in User model
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user.id);
     if (user) {
       if (req.body.profile.firstName) user.first_name = req.body.profile.firstName;
       if (req.body.profile.lastName) user.last_name = req.body.profile.lastName;
@@ -63,8 +63,8 @@ export const updateUserSettings = asyncHandler(async (req, res) => {
 // @route   PUT /api/settings/profile
 // @access  Private
 export const updateProfileSettings = asyncHandler(async (req, res) => {
-  const settings = await Settings.getOrCreateSettings(req.user._id);
-  const user = await User.findById(req.user._id);
+  const settings = await Settings.getOrCreateSettings(req.user.id);
+  const user = await User.findById(req.user.id);
   
   if (!user) {
     throw new ApiError(404, 'User not found');
@@ -107,7 +107,7 @@ export const updateProfileSettings = asyncHandler(async (req, res) => {
 // @route   PUT /api/settings/privacy
 // @access  Private
 export const updatePrivacySettings = asyncHandler(async (req, res) => {
-  const settings = await Settings.getOrCreateSettings(req.user._id);
+  const settings = await Settings.getOrCreateSettings(req.user.id);
   
   await settings.updateSettings({ privacy: req.body });
   
@@ -122,7 +122,7 @@ export const updatePrivacySettings = asyncHandler(async (req, res) => {
 // @route   PUT /api/settings/notifications
 // @access  Private
 export const updateNotificationSettings = asyncHandler(async (req, res) => {
-  const settings = await Settings.getOrCreateSettings(req.user._id);
+  const settings = await Settings.getOrCreateSettings(req.user.id);
   
   const allowedTypes = ['email', 'push', 'inApp'];
   const updates = {};
@@ -146,7 +146,7 @@ export const updateNotificationSettings = asyncHandler(async (req, res) => {
 // @route   PUT /api/settings/appearance
 // @access  Private
 export const updateAppearanceSettings = asyncHandler(async (req, res) => {
-  const settings = await Settings.getOrCreateSettings(req.user._id);
+  const settings = await Settings.getOrCreateSettings(req.user.id);
   
   await settings.updateSettings({ appearance: req.body });
   
@@ -161,7 +161,7 @@ export const updateAppearanceSettings = asyncHandler(async (req, res) => {
 // @route   PUT /api/settings/chat
 // @access  Private
 export const updateChatSettings = asyncHandler(async (req, res) => {
-  const settings = await Settings.getOrCreateSettings(req.user._id);
+  const settings = await Settings.getOrCreateSettings(req.user.id);
   
   await settings.updateSettings({ chat: req.body });
   
@@ -176,7 +176,7 @@ export const updateChatSettings = asyncHandler(async (req, res) => {
 // @route   PUT /api/settings/security
 // @access  Private
 export const updateSecuritySettings = asyncHandler(async (req, res) => {
-  const settings = await Settings.getOrCreateSettings(req.user._id);
+  const settings = await Settings.getOrCreateSettings(req.user.id);
   
   const {
     twoFactorEnabled,
@@ -206,7 +206,7 @@ export const updateSecuritySettings = asyncHandler(async (req, res) => {
 // @route   PUT /api/settings/house-listings
 // @access  Private
 export const updateHouseListingSettings = asyncHandler(async (req, res) => {
-  const settings = await Settings.getOrCreateSettings(req.user._id);
+  const settings = await Settings.getOrCreateSettings(req.user.id);
   
   await settings.updateSettings({ houseListings: req.body });
   
@@ -221,7 +221,7 @@ export const updateHouseListingSettings = asyncHandler(async (req, res) => {
 // @route   POST /api/settings/avatar
 // @access  Private
 export const uploadAvatar = asyncHandler(async (req, res) => {
-  const settings = await Settings.getOrCreateSettings(req.user._id);
+  const settings = await Settings.getOrCreateSettings(req.user.id);
   
   if (!req.file) {
     throw new ApiError(400, 'No file uploaded');
@@ -255,7 +255,7 @@ export const uploadAvatar = asyncHandler(async (req, res) => {
 // @route   DELETE /api/settings/avatar
 // @access  Private
 export const deleteAvatar = asyncHandler(async (req, res) => {
-  const settings = await Settings.getOrCreateSettings(req.user._id);
+  const settings = await Settings.getOrCreateSettings(req.user.id);
   
   if (settings.profile.avatar) {
     try {
@@ -280,7 +280,7 @@ export const deleteAvatar = asyncHandler(async (req, res) => {
 // @access  Private
 export const getNotificationPreferences = asyncHandler(async (req, res) => {
   const { type } = req.params;
-  const settings = await Settings.getOrCreateSettings(req.user._id);
+  const settings = await Settings.getOrCreateSettings(req.user.id);
   
   const preferences = settings.getNotificationPreferences(type);
   
@@ -297,7 +297,7 @@ export const checkNotificationPermission = asyncHandler(async (req, res) => {
   const { category } = req.params;
   const { type = 'inApp' } = req.query;
   
-  const settings = await Settings.getOrCreateSettings(req.user._id);
+  const settings = await Settings.getOrCreateSettings(req.user.id);
   const allowed = settings.allowsNotification(category, type);
   
   res.status(200).json({
@@ -317,10 +317,10 @@ export const resetSettings = asyncHandler(async (req, res) => {
   const { section } = req.body;
   
   // Delete existing settings
-  await Settings.findOneAndDelete({ user: req.user._id });
+  await Settings.findOneAndDelete({ user: req.user.id });
   
   // Create new settings with defaults
-  const settings = await Settings.getOrCreateSettings(req.user._id);
+  const settings = await Settings.getOrCreateSettings(req.user.id);
   
   res.status(200).json({
     success: true,
@@ -333,8 +333,8 @@ export const resetSettings = asyncHandler(async (req, res) => {
 // @route   GET /api/settings/export-data
 // @access  Private
 export const exportUserData = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id).select('-passwordHash');
-  const settings = await Settings.getOrCreateSettings(req.user._id);
+  const user = await User.findById(req.user.id).select('-passwordHash');
+  const settings = await Settings.getOrCreateSettings(req.user.id);
   
   const userData = {
     profile: {
@@ -368,7 +368,7 @@ export const deleteAccount = asyncHandler(async (req, res) => {
     throw new ApiError(400, 'Please type "DELETE" to confirm account deletion');
   }
   
-  const user = await User.findById(req.user._id);
+  const user = await User.findById(req.user.id);
   if (!user) {
     throw new ApiError(404, 'User not found');
   }
@@ -382,7 +382,7 @@ export const deleteAccount = asyncHandler(async (req, res) => {
   }
   
   // Delete user's avatar if exists
-  const settings = await Settings.findOne({ user: req.user._id });
+  const settings = await Settings.findOne({ user: req.user.id });
   if (settings && settings.profile.avatar) {
     try {
       const avatarPath = path.join(process.cwd(), 'uploads', 'avatars', settings.profile.avatar);
@@ -393,10 +393,10 @@ export const deleteAccount = asyncHandler(async (req, res) => {
   }
   
   // Delete settings
-  await Settings.findOneAndDelete({ user: req.user._id });
+  await Settings.findOneAndDelete({ user: req.user.id });
   
   // Delete user
-  await User.findByIdAndDelete(req.user._id);
+  await User.findByIdAndDelete(req.user.id);
   
   res.status(200).json({
     success: true,

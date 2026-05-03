@@ -8,20 +8,17 @@ const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
-  // Check if admin is logged in
   React.useEffect(() => {
     const token = localStorage.getItem("UniHub-Admin-Token");
-    if (!token) {
-      navigate('/admin/login');
-    }
+    if (!token) navigate('/admin/login');
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 flex">
       <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div className="lg:ml-64">
+      <div className="flex-1 flex flex-col min-w-0 lg:ml-64">
         <AdminHeader onMenuClick={() => setSidebarOpen(true)} />
-        <main className="p-6">
+        <main className="flex-1 p-4 sm:p-6 overflow-auto">
           <Outlet />
         </main>
       </div>
