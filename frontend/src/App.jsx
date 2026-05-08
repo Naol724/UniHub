@@ -17,6 +17,11 @@ import Notifications from './pages/Notifications/Notifications';
 import Profile      from './pages/Profile/Profile';
 import Settings     from './pages/Settings/Settings';
 
+// Auth pages
+import Login         from './pages/auth/Login';
+import Register      from './pages/auth/Register';
+import GoogleSuccess from './pages/auth/GoogleSuccess';
+
 // Admin pages (still require admin auth)
 import AdminLayout    from './components/admin/AdminLayout';
 import AdminLogin     from './pages/admin/AdminLogin';
@@ -57,10 +62,14 @@ function App() {
               <Route path="settings"      element={<AdminSettings />} />
             </Route>
 
-            {/* ── Legacy auth routes — redirect to home ───────────────── */}
-            <Route path="/login"    element={<Navigate to="/" replace />} />
-            <Route path="/register" element={<Navigate to="/" replace />} />
-            <Route path="/auth/*"   element={<Navigate to="/" replace />} />
+            {/* ── Auth routes ─────────────────────────────────────────── */}
+            <Route path="/user/login"    element={<Login />} />
+            <Route path="/user/register" element={<Register />} />
+            <Route path="/auth/google/success" element={<GoogleSuccess />} />
+            
+            {/* ── Legacy auth routes — redirect to new auth routes ───────────────── */}
+            <Route path="/login"    element={<Navigate to="/user/login" replace />} />
+            <Route path="/register" element={<Navigate to="/user/register" replace />} />
 
             {/* ── 404 fallback ─────────────────────────────────────────── */}
             <Route path="*" element={<Navigate to="/" replace />} />
