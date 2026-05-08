@@ -41,14 +41,34 @@ const Login = () => {
       return;
     }
     setIsSubmitting(true);
-    // TODO: wire up to auth service
-    console.log("Logging in with:", formData);
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Store token and user data (you might want to use AuthContext here)
+        localStorage.setItem('UniHub-Haramaya-Dev', data.token);
+        localStorage.setItem('UniHub-User', JSON.stringify(data.user));
+        window.location.href = '/dashboard';
+      } else {
+        setErrors({ general: data.message });
+      }
+    } catch (error) {
+      setErrors({ general: 'Network error. Please try again.' });
+    }
     setIsSubmitting(false);
   };
 
   const handleGoogle = () => {
-    // TODO: wire up Google OAuth
-    console.log("Google sign-in");
+    // Redirect to Google OAuth endpoint
+    window.location.href = 'http://localhost:5000/api/google';
   };
 
   return (
@@ -107,6 +127,12 @@ const Login = () => {
           Sign in to your UniHub account
         </p>
 
+        {errors.general && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-600 text-sm">{errors.general}</p>
+          </div>
+        )}
+        
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           {/* Email */}
           <div>
@@ -235,7 +261,7 @@ const Login = () => {
         {/* Footer */}
         <p className="text-center text-gray-400 mt-5" style={{ fontSize: "13px" }}>
           Don&apos;t have an account?{" "}
-          <a href="#" className="text-blue-500 font-medium hover:underline">
+          <a href="/user/register" className="text-blue-500 font-medium hover:underline">
             Sign up
           </a>
         </p>

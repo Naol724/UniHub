@@ -24,17 +24,30 @@ export const AuthProvider = ({ children }) => {
     return () => window.removeEventListener('focus', sync);
   }, []);
 
-  const login = useCallback(async (credentials) => {
-    const res = await API.post('/user/login', {
-      email: credentials.email?.trim(),
-      password: credentials.password,
-    });
-    const rawToken = res.data.token?.replace('Bearer ', '') || res.data.token;
-    setLocal('token', rawToken);
-    setLocal('user', res.data.user);
-    setToken(rawToken);
-    setUser(res.data.user);
-    return res.data;
+  const login = useCallback(async (credentials, isGoogleLogin = false) => {
+    let res;
+    
+    if (isGoogleLogin) {
+      // For Google login, credentials are actually token and user
+      const { token: googleToken, user: googleUser } = credentials;
+      setLocal('token', googleToken);
+      setLocal('user', googleUser);
+      setToken(googleToken);
+      setUser(googleUser);
+      return { token: googleToken, user: googleUser };
+    } else {
+      // For regular login
+      res = await API.post('/user/login', {
+        email: credentials.email?.trim(),
+        password: credentials.password,
+      });
+      const rawToken = res.data.token?.replace('Bearer ', '') || res.data.token;
+      setLocal('token', rawToken);
+      setLocal('user', res.data.user);
+      setToken(rawToken);
+      setUser(res.data.user);
+      return res.data;
+    }
   }, []);
 
   const register = useCallback(async (userData) => {
