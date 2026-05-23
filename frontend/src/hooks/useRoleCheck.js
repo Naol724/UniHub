@@ -1,6 +1,6 @@
 // frontend/src/hooks/useRoleCheck.js
 import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import API from '../API/Axios';
 
 export const useRoleCheck = () => {

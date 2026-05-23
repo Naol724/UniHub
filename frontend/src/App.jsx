@@ -1,11 +1,12 @@
 // frontend/src/App.jsx
-// All main routes are public — no login required to browse.
-// Auth is only triggered when a user attempts a service action.
+// Main routes now require authentication — login required to access app.
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import Layout from './components/Layout';
+import ProtectRoute from './components/ProtectRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Main pages
 import Dashboard    from './pages/Dashboard/Dashboard';
@@ -34,49 +35,55 @@ import AdminSettings  from './pages/admin/AdminSettings';
 
 function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <Routes>
-            {/* ── Main app — fully public ─────────────────────────────── */}
-            <Route path="/" element={<Layout />}>
-              <Route index element={<Dashboard />} />
-              <Route path="teams"         element={<Teams />} />
-              <Route path="tasks"         element={<Tasks />} />
-              <Route path="messages"      element={<Messages />} />
-              <Route path="resources"     element={<Resources />} />
-              <Route path="notifications" element={<Notifications />} />
-              <Route path="profile"       element={<Profile />} />
-              <Route path="settings"      element={<Settings />} />
-            </Route>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <AuthProvider>
+          <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <Routes>
+              {/* ── Auth routes — public (no authentication required) ─────────────────────────────── */}
+              <Route path="/user/login"    element={<Login />} />
+              <Route path="/user/register" element={<Register />} />
+              <Route path="/auth/google/success" element={<GoogleSuccess />} />
+              
+              {/* ── Legacy auth routes — redirect to new auth routes ───────────────── */}
+              <Route path="/login"    element={<Navigate to="/user/login" replace />} />
+              <Route path="/register" element={<Navigate to="/user/register" replace />} />
 
-            {/* ── Admin panel — still requires admin token ────────────── */}
-            <Route path="/admin/login"    element={<AdminLogin />} />
-            <Route path="/admin"          element={<AdminLayout />}>
-              <Route index                element={<Navigate to="/admin/dashboard" replace />} />
-              <Route path="dashboard"     element={<AdminDashboard />} />
-              <Route path="users"         element={<AdminUsers />} />
-              <Route path="teams"         element={<AdminTeams />} />
-              <Route path="tasks"         element={<AdminTasks />} />
-              <Route path="admins"        element={<AdminAdmins />} />
-              <Route path="settings"      element={<AdminSettings />} />
-            </Route>
+              {/* ── Main app — requires authentication ─────────────────────────────── */}
+              <Route path="/" element={
+                <ProtectRoute>
+                  <Layout />
+                </ProtectRoute>
+              }>
+                <Route index element={<Dashboard />} />
+                <Route path="teams"         element={<Teams />} />
+                <Route path="tasks"         element={<Tasks />} />
+                <Route path="messages"      element={<Messages />} />
+                <Route path="resources"     element={<Resources />} />
+                <Route path="notifications" element={<Notifications />} />
+                <Route path="profile"       element={<Profile />} />
+                <Route path="settings"      element={<Settings />} />
+              </Route>
 
-            {/* ── Auth routes ─────────────────────────────────────────── */}
-            <Route path="/user/login"    element={<Login />} />
-            <Route path="/user/register" element={<Register />} />
-            <Route path="/auth/google/success" element={<GoogleSuccess />} />
-            
-            {/* ── Legacy auth routes — redirect to new auth routes ───────────────── */}
-            <Route path="/login"    element={<Navigate to="/user/login" replace />} />
-            <Route path="/register" element={<Navigate to="/user/register" replace />} />
+              {/* ── Admin panel — still requires admin token ────────────── */}
+              <Route path="/admin/login"    element={<AdminLogin />} />
+              <Route path="/admin"          element={<AdminLayout />}>
+                <Route index                element={<Navigate to="/admin/dashboard" replace />} />
+                <Route path="dashboard"     element={<AdminDashboard />} />
+                <Route path="users"         element={<AdminUsers />} />
+                <Route path="teams"         element={<AdminTeams />} />
+                <Route path="tasks"         element={<AdminTasks />} />
+                <Route path="admins"        element={<AdminAdmins />} />
+                <Route path="settings"      element={<AdminSettings />} />
+              </Route>
 
-            {/* ── 404 fallback ─────────────────────────────────────────── */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Router>
-      </AuthProvider>
-    </ThemeProvider>
+              {/* ── 404 fallback ─────────────────────────────────────────── */}
+              <Route path="*" element={<Navigate to="/user/login" replace />} />
+            </Routes>
+          </Router>
+        </AuthProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

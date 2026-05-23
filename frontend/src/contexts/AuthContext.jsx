@@ -1,6 +1,6 @@
 // frontend/src/contexts/AuthContext.jsx
-// Auth is optional — the app works without login.
-// Auth state is only needed for service-request actions (Create Team, Add Task, Upload, etc.)
+// Auth is now required — users must login to access the app.
+// All main routes are protected and require authentication.
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { getLocal, setLocal, removeLocal } from '../utils/storage';
 import API from '../services/api';

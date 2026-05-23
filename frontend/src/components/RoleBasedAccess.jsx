@@ -1,6 +1,6 @@
 // frontend/src/components/RoleBasedAccess.jsx
 import React from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 
 // Show component only for admin
 export const AdminOnly = ({ children }) => {

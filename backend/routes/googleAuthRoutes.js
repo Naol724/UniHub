@@ -28,8 +28,8 @@ const initPassport = (app) => {
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
     console.log("⚠️  Google OAuth skipped - GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET not set");
     console.log("📝 Please add these variables to your .env file:");
-    console.log("   GOOGLE_CLIENT_ID=your_google_client_id");
-    console.log("   GOOGLE_CLIENT_SECRET=your_google_client_secret");
+    console.log("   GOOGLE_CLIENT_ID=your-google-client-id");
+    console.log("   GOOGLE_CLIENT_SECRET=your-google-client-secret");
     return;
   }
 
@@ -127,6 +127,14 @@ router.get("/", (req, res) => {
 // Step 2 - Google redirects back here
 router.get("/callback", (req, res, next) => {
   console.log("🔗 Google OAuth Callback - Processing response");
+  
+  // Prevent caching of this route
+  res.set({
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+    'Surrogate-Control': 'no-store'
+  });
   
   if (!passportInitialized) {
     console.log("❌ Google OAuth not configured in callback");
