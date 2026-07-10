@@ -4,8 +4,8 @@ import { protect, isAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/:userId", getUserById);
-router.get("/", protect, getAllUsers);
 router.get("/search", protect, searchUsers);
+router.get("/", protect, getAllUsers);
+router.get("/:userId", protect, getUserById);
 
 export default router;
