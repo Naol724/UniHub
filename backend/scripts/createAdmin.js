@@ -15,7 +15,7 @@ import Admin from "../models/admin-model.js";
 
 const createFirstAdmin = async () => {
     try {
-        const mongoURI = process.env.DB_URL;
+        const mongoURI = process.env.MONGODB_URI || process.env.DB_URL;
         
         if (!mongoURI) {
             console.error("❌ MONGODB_URI not found in .env file");
