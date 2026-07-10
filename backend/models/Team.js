@@ -78,18 +78,18 @@ const teamSchema = new mongoose.Schema(
 
 // Virtual for member count
 teamSchema.virtual('memberCount').get(function() {
-  return this.members.length;
+  return Array.isArray(this.members) ? this.members.length : 0;
 });
 
 // Virtual for task count
 teamSchema.virtual('taskCount').get(function() {
-  return this.tasks.length;
+  return Array.isArray(this.tasks) ? this.tasks.length : 0;
 });
 
 // Virtual for completed tasks count
 teamSchema.virtual('completedTaskCount').get(function() {
-  // This would be populated when we populate tasks
-  return this.tasks.filter(task => task.status === 'done').length;
+  if (!Array.isArray(this.tasks)) return 0;
+  return this.tasks.filter(task => task && task.status === 'done').length;
 });
 
 // Indexes for better performance
