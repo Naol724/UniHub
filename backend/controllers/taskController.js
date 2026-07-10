@@ -2,249 +2,247 @@ import asyncHandler from '../utils/asyncHandler.js';
 import ApiError from '../utils/ApiError.js';
 import Task from '../models/Task.js';
 import Team from '../models/Team.js';
-import User from '../models/User.js';
+import User from '../models/user-model.js';
+
+const userIdOf = (req) => req.user.id || req.user._id;
+
+const memberUserId = (m) => {
+  const u = m?.user ?? m;
+  return (u?._id || u)?.toString();
+};
+
+const isTeamMember = (team, userId) => {
+  const id = userId.toString();
+  if (team.leader?.toString() === id) return true;
+  return (team.members || []).some((m) => memberUserId(m) === id);
+};
+
+const normalizeStatus = (status) => {
+  if (!status) return 'todo';
+  const map = {
+    'to do': 'todo',
+    todo: 'todo',
+    'in progress': 'inprogress',
+    inprogress: 'inprogress',
+    in_progress: 'inprogress',
+    done: 'done',
+    completed: 'done',
+  };
+  return map[String(status).toLowerCase()] || 'todo';
+};
+
+const normalizePriority = (priority) => {
+  if (!priority) return 'medium';
+  const p = String(priority).toLowerCase();
+  if (['low', 'medium', 'high'].includes(p)) return p;
+  return 'medium';
+};
+
+const populateTask = async (taskOrQuery) => {
+  const paths = [
+    { path: 'assignee', select: 'firstName lastName first_name last_name email imageURL' },
+    { path: 'reporter', select: 'firstName lastName first_name last_name email imageURL' },
+    { path: 'createdBy', select: 'firstName lastName first_name last_name email imageURL' },
+    { path: 'team', select: 'name color icon' },
+  ];
+  if (typeof taskOrQuery.exec === 'function') {
+    return taskOrQuery
+      .populate('assignee', 'firstName lastName first_name last_name email imageURL')
+      .populate('reporter', 'firstName lastName first_name last_name email imageURL')
+      .populate('createdBy', 'firstName lastName first_name last_name email imageURL')
+      .populate('team', 'name color icon');
+  }
+  await taskOrQuery.populate(paths);
+  return taskOrQuery;
+};
 
 // @desc    Create a new task
 // @route   POST /api/tasks
-// @access  Private (team members only)
 const createTask = asyncHandler(async (req, res) => {
-  const { title, description, deadline, priority, assignedTo, teamId } = req.body;
+  const { title, description, deadline, dueDate, priority, assignedTo, assignee, teamId, team } = req.body;
+  const uid = userIdOf(req);
+  const resolvedTeamId = teamId || team;
 
-  // Validate required fields
-  if (!title || !teamId) {
-    throw new ApiError(400, 'Title and teamId are required');
-  }
+  if (!title || !resolvedTeamId) throw new ApiError(400, 'Title and teamId are required');
 
-  // Check if team exists and user is a member
-  const team = await Team.findById(teamId);
-  if (!team) {
-    throw new ApiError(404, 'Team not found');
-  }
+  const teamDoc = await Team.findById(resolvedTeamId);
+  if (!teamDoc) throw new ApiError(404, 'Team not found');
+  if (!isTeamMember(teamDoc, uid)) throw new ApiError(403, 'You are not a member of this team');
 
-  if (!team.members.some(member => member.toString() === req.user._id.toString())) {
-    throw new ApiError(403, 'You are not a member of this team');
-  }
-
-  // Validate assignedTo if provided (must be team member)
-  if (assignedTo) {
-    const assignedUser = await User.findById(assignedTo);
-    if (!assignedUser) {
-      throw new ApiError(404, 'Assigned user not found');
-    }
-    if (!team.members.some(member => member.toString() === assignedTo)) {
+  const assigneeId = assignee || assignedTo || null;
+  if (assigneeId) {
+    const assignedUser = await User.findById(assigneeId);
+    if (!assignedUser) throw new ApiError(404, 'Assigned user not found');
+    if (!isTeamMember(teamDoc, assigneeId)) {
       throw new ApiError(400, 'Assigned user must be a team member');
     }
   }
 
-  // Create task
   const task = await Task.create({
-    title,
+    title: title.trim(),
     description: description || '',
-    deadline: deadline ? new Date(deadline) : null,
-    priority: priority || 'Medium',
-    status: 'To Do',
-    assignedTo: assignedTo || null,
-    teamId,
-    createdBy: req.user._id
+    dueDate: dueDate || deadline ? new Date(dueDate || deadline) : undefined,
+    priority: normalizePriority(priority),
+    status: 'todo',
+    assignee: assigneeId,
+    team: resolvedTeamId,
+    reporter: uid,
+    createdBy: uid,
   });
 
-  // Populate for response
-  await task.populate('assignedTo', 'name email');
-  await task.populate('createdBy', 'name email');
-  await task.populate('teamId', 'name');
+  await populateTask(task);
 
   res.status(201).json({
     success: true,
     message: 'Task created successfully',
-    data: task
+    data: task,
   });
+});
+
+// @desc    Get all tasks for current user (across teams)
+// @route   GET /api/tasks
+const getMyTasks = asyncHandler(async (req, res) => {
+  const uid = userIdOf(req);
+  const teams = await Team.find({
+    $or: [{ leader: uid }, { 'members.user': uid }],
+  }).select('_id');
+  const teamIds = teams.map((t) => t._id);
+
+  const tasks = await populateTask(
+    Task.find({
+      $or: [
+        { team: { $in: teamIds } },
+        { assignee: uid },
+        { createdBy: uid },
+        { reporter: uid },
+      ],
+    }).sort({ createdAt: -1 })
+  );
+
+  res.status(200).json({ success: true, data: tasks });
 });
 
 // @desc    Get all tasks for a specific team
 // @route   GET /api/tasks/team/:teamId
-// @access  Private (team members only)
 const getTasksForTeam = asyncHandler(async (req, res) => {
   const { teamId } = req.params;
+  const uid = userIdOf(req);
 
-  // Check if team exists and user is a member
   const team = await Team.findById(teamId);
-  if (!team) {
-    throw new ApiError(404, 'Team not found');
-  }
+  if (!team) throw new ApiError(404, 'Team not found');
+  if (!isTeamMember(team, uid)) throw new ApiError(403, 'You are not a member of this team');
 
-  if (!team.members.some(member => member.toString() === req.user._id.toString())) {
-    throw new ApiError(403, 'You are not a member of this team');
-  }
-
-  // Get tasks for the team
-  const tasks = await Task.find({ teamId })
-    .populate('assignedTo', 'name email')
-    .populate('createdBy', 'name email')
-    .populate('teamId', 'name')
-    .sort({ createdAt: -1 });
-
-  res.status(200).json({
-    success: true,
-    data: tasks
-  });
+  const tasks = await populateTask(Task.find({ team: teamId }).sort({ createdAt: -1 }));
+  res.status(200).json({ success: true, data: tasks });
 });
 
 // @desc    Get single task by ID
 // @route   GET /api/tasks/:id
-// @access  Private (team members only)
 const getTaskById = asyncHandler(async (req, res) => {
-  const task = await Task.findById(req.params.id)
-    .populate('assignedTo', 'name email')
-    .populate('createdBy', 'name email')
-    .populate('teamId', 'name members leader');
+  const task = await populateTask(Task.findById(req.params.id).populate('team'));
+  if (!task) throw new ApiError(404, 'Task not found');
 
-  if (!task) {
-    throw new ApiError(404, 'Task not found');
-  }
-
-  // Check if user is a member of the team
-  if (!task.teamId.members.some(member => member.toString() === req.user._id.toString())) {
+  const team = await Team.findById(task.team._id || task.team);
+  if (!team || !isTeamMember(team, userIdOf(req))) {
     throw new ApiError(403, 'Access denied. You are not a member of this team');
   }
 
-  res.status(200).json({
-    success: true,
-    data: task
-  });
+  res.status(200).json({ success: true, data: task });
 });
 
 // @desc    Update task details
 // @route   PUT /api/tasks/:id
-// @access  Private (team members only, creator/leader for re-assignment)
 const updateTask = asyncHandler(async (req, res) => {
-  const { title, description, deadline, priority, assignedTo } = req.body;
+  const { title, description, deadline, dueDate, priority, assignedTo, assignee, status } = req.body;
+  const uid = userIdOf(req);
 
-  const task = await Task.findById(req.params.id).populate('teamId');
+  const task = await Task.findById(req.params.id);
+  if (!task) throw new ApiError(404, 'Task not found');
 
-  if (!task) {
-    throw new ApiError(404, 'Task not found');
-  }
+  const team = await Team.findById(task.team);
+  if (!team || !isTeamMember(team, uid)) throw new ApiError(403, 'You are not a member of this team');
 
-  // Check if user is a member of the team
-  if (!task.teamId.members.some(member => member.toString() === req.user._id.toString())) {
-    throw new ApiError(403, 'You are not a member of this team');
-  }
-
-  // Check permissions for re-assignment (only creator or leader)
-  if (assignedTo !== undefined && assignedTo !== task.assignedTo?.toString()) {
-    const isCreator = req.user._id.toString() === task.createdBy.toString();
-    const isLeader = req.user._id.toString() === task.teamId.leader.toString();
-
+  const nextAssignee = assignee !== undefined ? assignee : assignedTo;
+  if (nextAssignee !== undefined && nextAssignee?.toString() !== task.assignee?.toString()) {
+    const isCreator = uid.toString() === task.createdBy.toString();
+    const isLeader = uid.toString() === team.leader.toString();
     if (!isCreator && !isLeader) {
       throw new ApiError(403, 'Only task creator or team leader can re-assign tasks');
     }
-
-    // Validate assigned user
-    if (assignedTo) {
-      const assignedUser = await User.findById(assignedTo);
-      if (!assignedUser) {
-        throw new ApiError(404, 'Assigned user not found');
-      }
-      if (!task.teamId.members.some(member => member.toString() === assignedTo)) {
+    if (nextAssignee) {
+      if (!isTeamMember(team, nextAssignee)) {
         throw new ApiError(400, 'Assigned user must be a team member');
       }
     }
+    task.assignee = nextAssignee || null;
   }
 
-  // Update allowed fields
   if (title !== undefined) task.title = title;
   if (description !== undefined) task.description = description;
-  if (deadline !== undefined) task.deadline = deadline ? new Date(deadline) : null;
-  if (priority !== undefined) task.priority = priority;
-  if (assignedTo !== undefined) task.assignedTo = assignedTo;
+  if (dueDate !== undefined || deadline !== undefined) {
+    const d = dueDate ?? deadline;
+    task.dueDate = d ? new Date(d) : undefined;
+  }
+  if (priority !== undefined) task.priority = normalizePriority(priority);
+  if (status !== undefined) task.status = normalizeStatus(status);
+  task.updatedBy = uid;
 
   await task.save();
+  await populateTask(task);
 
-  // Populate for response
-  await task.populate('assignedTo', 'name email');
-  await task.populate('createdBy', 'name email');
-  await task.populate('teamId', 'name');
-
-  res.status(200).json({
-    success: true,
-    message: 'Task updated successfully',
-    data: task
-  });
+  res.status(200).json({ success: true, message: 'Task updated successfully', data: task });
 });
 
-// @desc    Update task status (move between Kanban columns)
+// @desc    Update task status
 // @route   PUT /api/tasks/:id/status
-// @access  Private (team members only)
 const updateTaskStatus = asyncHandler(async (req, res) => {
-  const { status } = req.body;
-
-  const validStatuses = ['To Do', 'In Progress', 'Done'];
-  if (!status || !validStatuses.includes(status)) {
-    throw new ApiError(400, 'Valid status is required: To Do, In Progress, or Done');
+  const status = normalizeStatus(req.body.status);
+  if (!['todo', 'inprogress', 'done'].includes(status)) {
+    throw new ApiError(400, 'Valid status is required: todo, inprogress, or done');
   }
 
-  const task = await Task.findById(req.params.id).populate('teamId');
+  const task = await Task.findById(req.params.id);
+  if (!task) throw new ApiError(404, 'Task not found');
 
-  if (!task) {
-    throw new ApiError(404, 'Task not found');
-  }
-
-  // Check if user is a member of the team
-  if (!task.teamId.members.some(member => member.toString() === req.user._id.toString())) {
+  const team = await Team.findById(task.team);
+  if (!team || !isTeamMember(team, userIdOf(req))) {
     throw new ApiError(403, 'You are not a member of this team');
   }
 
   task.status = status;
+  task.updatedBy = userIdOf(req);
   await task.save();
+  await populateTask(task);
 
-  // Populate for response
-  await task.populate('assignedTo', 'name email');
-  await task.populate('createdBy', 'name email');
-  await task.populate('teamId', 'name');
-
-  res.status(200).json({
-    success: true,
-    message: 'Task status updated successfully',
-    data: task
-  });
+  res.status(200).json({ success: true, message: 'Task status updated successfully', data: task });
 });
 
 // @desc    Delete task
 // @route   DELETE /api/tasks/:id
-// @access  Private (creator or team leader only)
 const deleteTask = asyncHandler(async (req, res) => {
-  const task = await Task.findById(req.params.id).populate('teamId');
+  const uid = userIdOf(req);
+  const task = await Task.findById(req.params.id);
+  if (!task) throw new ApiError(404, 'Task not found');
 
-  if (!task) {
-    throw new ApiError(404, 'Task not found');
-  }
+  const team = await Team.findById(task.team);
+  if (!team || !isTeamMember(team, uid)) throw new ApiError(403, 'You are not a member of this team');
 
-  // Check if user is a member of the team
-  if (!task.teamId.members.some(member => member.toString() === req.user._id.toString())) {
-    throw new ApiError(403, 'You are not a member of this team');
-  }
-
-  // Check permissions (only creator or leader)
-  const isCreator = req.user._id.toString() === task.createdBy.toString();
-  const isLeader = req.user._id.toString() === task.teamId.leader.toString();
-
+  const isCreator = uid.toString() === task.createdBy.toString();
+  const isLeader = uid.toString() === team.leader.toString();
   if (!isCreator && !isLeader) {
     throw new ApiError(403, 'Only task creator or team leader can delete tasks');
   }
 
   await Task.findByIdAndDelete(req.params.id);
-
-  res.status(200).json({
-    success: true,
-    message: 'Task deleted successfully'
-  });
+  res.status(200).json({ success: true, message: 'Task deleted successfully' });
 });
 
 export {
   createTask,
+  getMyTasks,
   getTasksForTeam,
   getTaskById,
   updateTask,
   updateTaskStatus,
-  deleteTask
+  deleteTask,
 };
