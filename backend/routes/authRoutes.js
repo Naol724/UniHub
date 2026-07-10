@@ -30,11 +30,11 @@ const upload = multer({
 
 router.post("/user/register", userRegister);
 router.post("/user/login", userLogin);
-router.get("/profile/:id", getUserProfile);
-router.put("/profile/:id", updateProfile);
-router.post("/profile/:id/upload-image", upload.single('profileImage'), uploadProfileImage);
-router.post("/profile/:id/change-password", changePassword);
-router.get("/users", getAllUsers);
-router.get("/users/search", searchUsers);
+router.get("/profile/:id", protect, getUserProfile);
+router.put("/profile/:id", protect, updateProfile);
+router.post("/profile/:id/upload-image", protect, upload.single('profileImage'), uploadProfileImage);
+router.post("/profile/:id/change-password", protect, changePassword);
+router.get("/users", protect, getAllUsers);
+router.get("/users/search", protect, searchUsers);
 
 export default router;
