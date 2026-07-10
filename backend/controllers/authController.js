@@ -1,14 +1,13 @@
 import User from "../models/user-model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-dotenv.config();
+import { currentConfig } from "../config/environment.js";
 
-const JWT_SECRET = process.env.JWT_SECRET || process.env.JWT_KEY_SECRET || "your_secret_key";
+const getJwtSecret = () => currentConfig.JWT_SECRET || "your_secret_key";
 
 const generateToken = (user) => jwt.sign(
   { id: user._id, email: user.email },
-  JWT_SECRET,
+  getJwtSecret(),
   { expiresIn: process.env.JWT_EXPIRE || "7d" }
 );
 
@@ -20,6 +19,9 @@ const formatUser = (user) => ({
   role:      user.role,
   imageURL:  user.imageURL || user.avatar || "",
   department: user.department || "",
+  phone:     user.phone || "",
+  location:  user.location || "",
+  Bio:       user.Bio || user.bio || "",
   isActive:  user.isActive
 });
 
@@ -92,7 +94,7 @@ export const userLogin = async (req, res) => {
       return res.status(401).json({ success: false, message: "Invalid email or password" });
 
     const token = generateToken(user);
-    return res.status(200).json({ success: true, message: "Login successful", token: `Bearer ${token}`, user: formatUser(user) });
+    return res.status(200).json({ success: true, message: "Login successful", token, user: formatUser(user) });
 
   } catch (error) {
     console.error("Login error:", error);
