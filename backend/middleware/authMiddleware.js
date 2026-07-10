@@ -1,6 +1,9 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user-model.js";
 import TeamMember from "../models/TeamMember-model.js";
+import { currentConfig } from "../config/environment.js";
+
+const getJwtSecret = () => currentConfig.JWT_SECRET || "your_secret_key";
 
 export const protect = async (req, res, next) => {
   let token;
@@ -8,11 +11,21 @@ export const protect = async (req, res, next) => {
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer'))
       token = req.headers.authorization.split(' ')[1];
     if (!token) return res.status(401).json({ success: false, message: "Not authorized, no token provided" });
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || process.env.JWT_KEY_SECRET || "your_secret_key");
+    const decoded = jwt.verify(token, getJwtSecret());
     const user = await User.findById(decoded.id).select("-passwordHash");
     if (!user) return res.status(401).json({ success: false, message: "User not found" });
     if (!user.isActive) return res.status(401).json({ success: false, message: "Account is deactivated" });
-    req.user = { id: user._id, first_name: user.first_name, last_name: user.last_name, email: user.email, role: user.role || "user" };
+    // Expose both id and _id — controllers use either form
+    req.user = {
+      id: user._id,
+      _id: user._id,
+      first_name: user.first_name || user.firstName,
+      last_name: user.last_name || user.lastName,
+      firstName: user.firstName || user.first_name,
+      lastName: user.lastName || user.last_name,
+      email: user.email,
+      role: user.role || "user",
+    };
     next();
   } catch (error) {
     if (error.name === 'JsonWebTokenError') return res.status(401).json({ success: false, message: "Invalid token" });
@@ -36,7 +49,7 @@ export const optionalAuth = async (req, res, next) => {
   try {
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
       const token = req.headers.authorization.split(' ')[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || process.env.JWT_KEY_SECRET || "your_secret_key");
+      const decoded = jwt.verify(token, getJwtSecret());
       req.user = await User.findById(decoded.id).select("-passwordHash");
     }
   } catch (_) {}
