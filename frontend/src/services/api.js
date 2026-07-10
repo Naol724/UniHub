@@ -1,7 +1,4 @@
 // frontend/src/services/api.js
-// Public-first API client — no forced redirects to login on 401.
-// Token is attached when present; missing token just means the request
-// goes out unauthenticated (public endpoints still work fine).
 import axios from 'axios';
 import { getLocal } from '../utils/storage';
 
@@ -11,14 +8,18 @@ const API = axios.create({
   timeout: 15000,
 });
 
-// Attach token when available — silently skip when not logged in
 API.interceptors.request.use((config) => {
-  const token = getLocal('token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  let token = getLocal('token');
+  if (token) {
+    // Avoid "Bearer Bearer <jwt>" if a prefixed token was stored
+    if (typeof token === 'string' && token.startsWith('Bearer ')) {
+      token = token.slice(7).trim();
+    }
+    config.headers.Authorization = `Bearer ${token}`;
+  }
   return config;
 });
 
-// Do NOT redirect on 401 — let the caller handle it
 API.interceptors.response.use(
   (res) => res,
   (err) => Promise.reject(err)
