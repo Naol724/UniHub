@@ -1,10 +1,8 @@
 // frontend/src/contexts/ThemeContext.jsx
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
-// Create context
-const ThemeContext = createContext();
+const ThemeContext = createContext(null);
 
-// Theme configuration
 const themes = {
   light: {
     name: 'light',
@@ -21,8 +19,8 @@ const themes = {
       text: '#1e293b',
       textSecondary: '#64748b',
       border: '#e2e8f0',
-      shadow: 'rgba(59,130,246,0.10)'
-    }
+      shadow: 'rgba(59,130,246,0.10)',
+    },
   },
   dark: {
     name: 'dark',
@@ -39,65 +37,73 @@ const themes = {
       text: '#f1f5f9',
       textSecondary: '#94a3b8',
       border: '#334155',
-      shadow: 'rgba(0,0,0,0.25)'
-    }
+      shadow: 'rgba(0,0,0,0.35)',
+    },
+  },
+};
+
+const applyThemeToDom = (themeName) => {
+  const colors = themes[themeName]?.colors || themes.light.colors;
+  const root = document.documentElement;
+
+  Object.entries(colors).forEach(([key, value]) => {
+    root.style.setProperty(`--color-${key}`, value);
+  });
+
+  // Legacy CSS tokens used in index.css
+  root.style.setProperty('--bg', colors.background);
+  root.style.setProperty('--card', colors.surface);
+  root.style.setProperty('--text', colors.text);
+  root.style.setProperty('--muted', colors.textSecondary);
+  root.style.setProperty('--border', colors.border);
+  root.style.setProperty('--blue', colors.primary);
+  root.style.setProperty('--blue-dark', colors.primaryDark);
+  root.style.setProperty('--blue-light', colors.primaryLight);
+  root.style.setProperty('--shadow', `0 4px 24px ${colors.shadow}`);
+
+  if (themeName === 'dark') {
+    root.classList.add('dark');
+    root.style.colorScheme = 'dark';
+  } else {
+    root.classList.remove('dark');
+    root.style.colorScheme = 'light';
   }
 };
 
-// Provider component
 export const ThemeProvider = ({ children }) => {
   const [currentTheme, setCurrentTheme] = useState(() => {
-    // Get theme from localStorage or default to light
-    const savedTheme = localStorage.getItem('unihub-theme');
-    return savedTheme && themes[savedTheme] ? savedTheme : 'light';
+    if (typeof window === 'undefined') return 'light';
+    const saved = localStorage.getItem('unihub-theme');
+    if (saved === 'light' || saved === 'dark') return saved;
+    // Prefer system preference on first visit
+    if (window.matchMedia?.('(prefers-color-scheme: dark)').matches) return 'dark';
+    return 'light';
   });
 
-  const [theme, setTheme] = useState(themes[currentTheme]);
-
-  // Update theme when currentTheme changes
   useEffect(() => {
-    setTheme(themes[currentTheme]);
+    applyThemeToDom(currentTheme);
     localStorage.setItem('unihub-theme', currentTheme);
-    
-    // Update CSS variables
-    const root = document.documentElement;
-    const colors = theme.colors;
-    
-    Object.keys(colors).forEach(key => {
-      root.style.setProperty(`--color-${key}`, colors[key]);
-    });
-  }, [currentTheme, theme]);
+  }, [currentTheme]);
 
-  // Toggle theme function
-  const toggleTheme = () => {
-    setCurrentTheme(prev => prev === 'light' ? 'dark' : 'light');
-  };
+  const toggleTheme = useCallback(() => {
+    setCurrentTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+  }, []);
 
-  // Set specific theme function
-  const setThemeByName = (themeName) => {
-    if (themes[themeName]) {
-      setCurrentTheme(themeName);
-    }
-  };
+  const setThemeByName = useCallback((themeName) => {
+    if (themes[themeName]) setCurrentTheme(themeName);
+  }, []);
 
-  // Get current theme info
-  const getThemeInfo = () => {
-    return {
-      current: currentTheme,
-      isDark: currentTheme === 'dark',
-      isLight: currentTheme === 'light',
-      colors: theme.colors,
-      availableThemes: Object.keys(themes)
-    };
-  };
+  const theme = themes[currentTheme];
+  const isDark = currentTheme === 'dark';
 
   const value = {
     theme,
     currentTheme,
+    isDark,
+    isLight: !isDark,
     toggleTheme,
     setThemeByName,
-    getThemeInfo,
-    themes
+    themes,
   };
 
   return (
@@ -107,22 +113,10 @@ export const ThemeProvider = ({ children }) => {
   );
 };
 
-// Custom hook to use theme context
 export const useTheme = () => {
   const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
+  if (!context) throw new Error('useTheme must be used within a ThemeProvider');
   return context;
-};
-
-// Helper function to get theme color
-export const getThemeColor = (colorName, themeContext) => {
-  if (!themeContext || !themeContext.theme.colors[colorName]) {
-    console.warn(`Theme color "${colorName}" not found`);
-    return '#000000';
-  }
-  return themeContext.theme.colors[colorName];
 };
 
 export default ThemeContext;
