@@ -76,16 +76,17 @@ const AuthModal = ({ isOpen, onClose, onSuccess, actionLabel = 'continue' }) => 
   };
 
   const handleGoogleAuth = () => {
-    // Get the base URL from environment variables
     const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    const googleAuthUrl = `${baseUrl.replace('/api', '')}/api/google`;
+    const googleAuthUrl = `${baseUrl.replace(/\/api\/?$/, '')}/api/google`;
     console.log('🔗 Redirecting to Google OAuth:', googleAuthUrl);
     window.location.href = googleAuthUrl;
   };
 
   const inputCls = (field) =>
-    `w-full px-3 py-2.5 rounded-lg border text-sm outline-none transition-colors focus:ring-2 focus:ring-blue-500 ${
-      errors[field] ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50 focus:bg-white'
+    `w-full px-3 py-2.5 rounded-lg border text-sm outline-none transition-colors focus:ring-2 focus:ring-blue-500 dark:text-slate-100 ${
+      errors[field]
+        ? 'border-red-400 bg-red-50 dark:bg-red-900/20'
+        : 'border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-900'
     }`;
 
   return (
@@ -99,19 +100,19 @@ const AuthModal = ({ isOpen, onClose, onSuccess, actionLabel = 'continue' }) => 
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-sm bg-white dark:bg-slate-800 rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="px-6 pt-6 pb-4 border-b border-gray-100">
+        <div className="px-6 pt-6 pb-4 border-b border-gray-100 dark:border-slate-700">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
                 <span className="text-white font-bold text-sm">UH</span>
               </div>
-              <span className="font-bold text-gray-900">UniHub</span>
+              <span className="font-bold text-gray-900 dark:text-white">UniHub</span>
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
               aria-label="Close"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,10 +120,10 @@ const AuthModal = ({ isOpen, onClose, onSuccess, actionLabel = 'continue' }) => 
               </svg>
             </button>
           </div>
-          <h2 id="auth-modal-title" className="text-lg font-bold text-gray-900 mt-3">
+          <h2 id="auth-modal-title" className="text-lg font-bold text-gray-900 dark:text-white mt-3">
             {mode === 'login' ? 'Sign in to continue' : 'Create your account'}
           </h2>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">
             {mode === 'login'
               ? `Sign in to ${actionLabel}`
               : `Register to ${actionLabel}`}
@@ -205,7 +206,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess, actionLabel = 'continue' }) => 
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-2.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed mt-1"
+            className="btn-primary w-full mt-1 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {submitting
               ? (mode === 'login' ? 'Signing in…' : 'Creating account…')
@@ -225,7 +226,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess, actionLabel = 'continue' }) => 
           <button
             type="button"
             onClick={handleGoogleAuth}
-            className="w-full flex items-center justify-center gap-2 bg-white text-gray-700 text-sm font-medium transition hover:bg-gray-50 border border-gray-200 rounded-lg py-2.5"
+            className="btn-secondary w-full"
           >
             {/* Google icon */}
             <svg width="18" height="18" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
