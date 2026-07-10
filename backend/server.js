@@ -1,27 +1,31 @@
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-// Load environment variables at the very top
-dotenv.config({ path: './.env', debug: true });
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load .env from backend directory before any other local imports resolve config
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 // Debug environment loading
 console.log('🔧 Environment Loading Debug:', {
   NODE_ENV: process.env.NODE_ENV,
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ? '✅ Set' : '❌ Missing',
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET ? '✅ Set' : '❌ Missing',
-  MONGODB_URI: process.env.MONGODB_URI ? '✅ Set' : '❌ Missing'
+  MONGODB_URI: process.env.MONGODB_URI ? '✅ Set' : '❌ Missing',
+  FRONTEND_URL: process.env.FRONTEND_URL || '(default)',
+  GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL || '(default)'
 });
+
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
-import path from "path";
-import { fileURLToPath } from 'url';
 import errorHandler from "./middleware/error.middleware.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { currentConfig } from "./config/environment.js";
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = currentConfig.PORT || process.env.PORT || 5000;
 
 // Enhanced CORS configuration for both local and production
 const corsOptions = {
@@ -76,6 +80,15 @@ app.get("/", (req, res) => {
   });
 });
 
+app.get("/api/health", (req, res) => {
+  res.json({
+    status: "ok",
+    success: true,
+    mongodb: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+    timestamp: new Date().toISOString(),
+  });
+});
+
 import { createServer } from "http";
 import { Server } from "socket.io";
 import googleAuthRoutes, { initPassport } from "./routes/googleAuthRoutes.js";
@@ -119,6 +132,27 @@ if (!mongoUri) {
   process.exit(1);
 }
 
+// Create HTTP server for Socket.io
+const server = createServer(app);
+
+// Initialize Socket.io
+const io = new Server(server, {
+  cors: {
+    origin: [
+      process.env.FRONTEND_URL,
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'https://uni-hub-theta.vercel.app',
+      /\.onrender\.com$/,
+      /\.vercel\.app$/
+    ].filter(Boolean),
+    credentials: true
+  }
+});
+
+// Initialize chat socket
+initializeChatSocket(io);
+
 mongoose.connect(mongoUri, {
   serverSelectionTimeoutMS: 30000,
   socketTimeoutMS: 45000,
@@ -133,6 +167,9 @@ mongoose.connect(mongoUri, {
     console.log("✅ MongoDB Connected Successfully");
     console.log(`📊 Database: ${mongoose.connection.db.databaseName}`);
     console.log(`🌐 Host: ${mongoose.connection.host}`);
+
+    // Only accept traffic after DB is ready (bufferCommands: false)
+    server.listen(PORT, () => console.log(`🚀 Server is running on port ${PORT}`));
   })
   .catch((err) => {
     console.error("❌ MongoDB Connection Error:", err.message);
@@ -141,30 +178,7 @@ mongoose.connect(mongoUri, {
     if (err.reason) {
       console.error("🔍 Reason:", err.reason);
     }
-    // Don't exit in production, let the app run without DB for debugging
     if (process.env.NODE_ENV !== 'production') {
       process.exit(1);
     }
   });
-
-// Create HTTP server for Socket.io
-const server = createServer(app);
-
-// Initialize Socket.io
-const io = new Server(server, {
-  cors: {
-    origin: [
-      process.env.FRONTEND_URL,
-      'http://localhost:3000',
-      'http://localhost:5173',
-      'https://unihub-frontend.onrender.com',
-      /\.onrender\.com$/
-    ].filter(Boolean),
-    credentials: true
-  }
-});
-
-// Initialize chat socket
-initializeChatSocket(io);
-
-server.listen(PORT, () => console.log(`🚀 Server is running on port ${PORT}`));
