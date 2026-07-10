@@ -1,24 +1,28 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
+import API from '../../services/api';
 import StatsCard from './components/StatsCard';
-import ActivityFeed from './components/ActivityFeed';
-import QuickActions from './components/QuickActions';
-import UpcomingDeadlines from './components/UpcomingDeadlines';
-import ProgressChart from './components/ProgressChart';
-import { mockUserData, mockStats, mockActivities, mockDeadlines, mockChartData } from './mockData';
+
+const STAT_META = [
+  { id: 1, title: 'Teams', key: 'teams', icon: 'T', iconColor: 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' },
+  { id: 2, title: 'Tasks', key: 'tasks', icon: '✓', iconColor: 'bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400' },
+  { id: 3, title: 'Completed', key: 'done', icon: 'C', iconColor: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' },
+  { id: 4, title: 'In Progress', key: 'progress', icon: '…', iconColor: 'bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400' },
+];
 
 const Dashboard = () => {
-  // State for user data (will be replaced by API call later)
-  const [user, setUser] = useState(mockUserData);
-  const [stats, setStats] = useState(mockStats);
-  const [activities, setActivities] = useState(mockActivities);
-  const [deadlines, setDeadlines] = useState(mockDeadlines);
-  const [chartData, setChartData] = useState(mockChartData);
+  const { user } = useAuth();
+  const { theme } = useTheme();
+  const [counts, setCounts] = useState({ teams: 0, tasks: 0, done: 0, progress: 0 });
+  const [recentTasks, setRecentTasks] = useState([]);
+  const [teams, setTeams] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // Simulate loading state (for future API integration)
-  const [isLoading, setIsLoading] = useState(false);
+  const firstName = user?.firstName || user?.first_name || 'there';
 
-  // Get greeting based on time of day
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good morning';
@@ -26,123 +30,224 @@ const Dashboard = () => {
     return 'Good evening';
   };
 
+  const load = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const [teamsRes, tasksRes] = await Promise.all([
+        API.get('/teams'),
+        API.get('/tasks'),
+      ]);
+      const teamList = teamsRes.data.data || [];
+      const taskList = tasksRes.data.data || [];
+      const done = taskList.filter((t) => t.status === 'done').length;
+      const inProgress = taskList.filter((t) => t.status === 'inprogress').length;
+
+      setTeams(teamList.slice(0, 4));
+      setRecentTasks(taskList.slice(0, 5));
+      setCounts({
+        teams: teamList.length,
+        tasks: taskList.length,
+        done,
+        progress: inProgress,
+      });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to load dashboard');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const longDate = new Date().toLocaleDateString('en-US', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+  });
+  const shortDate = new Date().toLocaleDateString('en-US', {
+    weekday: 'short', month: 'short', day: 'numeric',
+  });
+
+  const priorityBadge = (priority) => {
+    const p = String(priority || 'medium').toLowerCase();
+    if (p === 'high') return 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400';
+    if (p === 'low') return 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400';
+    return 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
+  };
+
   return (
-    <div className="p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8">
-      {/* Header Section with Greeting */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-            {getGreeting()}, {user.firstName}! 👋
+    /* Layout already pads — avoid double padding */
+    <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-6 md:space-y-8">
+      {/* Header */}
+      <header className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white leading-tight break-words">
+            {getGreeting()}, {firstName}!
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Here's what's happening with your projects today.
+          <p className="text-sm sm:text-base text-gray-500 dark:text-slate-400 mt-1">
+            Here&apos;s what&apos;s happening with your projects today.
           </p>
         </div>
-        
-        {/* Date Display */}
-        <div className="text-right">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {new Date().toLocaleDateString('en-US', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            })}
+        <div className="flex flex-col gap-2 sm:items-end sm:flex-shrink-0">
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400">
+            <span className="sm:hidden">{shortDate}</span>
+            <span className="hidden sm:inline">{longDate}</span>
           </p>
-        </div>
-      </div>
-
-      {/* Stats Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        {stats.map((stat, index) => (
-          <StatsCard
-            key={stat.id}
-            title={stat.title}
-            value={stat.value}
-            change={stat.change}
-            changeType={stat.changeType}
-            icon={stat.icon}
-            iconColor={stat.iconColor}
-            delay={index * 100}
-          />
-        ))}
-      </div>
-
-      {/* Main Content Grid: 2 columns on desktop */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-        {/* Left Column: Activity Feed + Progress Chart (2/3 width on desktop) */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Progress Chart Section */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 md:p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Task Progress Overview
-                </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Track your team's task completion across all projects
-                </p>
-              </div>
-              <select className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                <option>Last 7 days</option>
-                <option>Last 30 days</option>
-                <option>Last 90 days</option>
-              </select>
-            </div>
-            <ProgressChart data={chartData} />
+          <div className="page-actions">
+            <Link to="/teams" className="btn-secondary btn-responsive text-center">
+              Teams
+            </Link>
+            <Link to="/tasks" className="btn-primary btn-responsive text-center">
+              Tasks
+            </Link>
           </div>
-
-          {/* Activity Feed */}
-          <ActivityFeed activities={activities} isLoading={isLoading} />
         </div>
+      </header>
 
-        {/* Right Column: Quick Actions + Upcoming Deadlines (1/3 width on desktop) */}
-        <div className="space-y-6">
-          <QuickActions />
-          <UpcomingDeadlines deadlines={deadlines} />
+      {error && (
+        <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm break-words">
+          {error}
         </div>
-      </div>
+      )}
 
-      {/* Recent Teams Section - Optional but adds value */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 md:p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Your Active Teams
-            </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Teams you're currently collaborating with
-            </p>
-          </div>
-          <button className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
-            View All →
-          </button>
+      {loading ? (
+        <div className="flex justify-center py-16 sm:py-24">
+          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {user.teams.map((team) => (
+      ) : (
+        <>
+          {/* Stats: 2×2 on mobile, 4 across on lg */}
+          <section
+            className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5"
+            aria-label="Overview stats"
+          >
+            {STAT_META.map((stat, index) => (
+              <StatsCard
+                key={stat.id}
+                title={stat.title}
+                value={counts[stat.key]}
+                icon={stat.icon}
+                iconColor={stat.iconColor}
+                delay={index * 40}
+              />
+            ))}
+          </section>
+
+          {/* Lists */}
+          <section className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-5 md:gap-6">
+            {/* Teams */}
             <div
-              key={team.id}
-              className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+              className="rounded-xl border p-3.5 sm:p-5 flex flex-col min-h-0"
+              style={{ backgroundColor: theme.colors.surface, borderColor: theme.colors.border }}
             >
-              <div
-                className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-semibold text-sm"
-                style={{ backgroundColor: team.color }}
-              >
-                {team.icon}
+              <div className="section-header !mb-3 sm:!mb-4">
+                <h2 className="font-bold text-base sm:text-lg" style={{ color: theme.colors.text }}>
+                  Your teams
+                </h2>
+                <Link to="/teams" className="btn-link self-start sm:self-auto -ml-2 sm:ml-0">
+                  View all
+                </Link>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-gray-900 dark:text-white truncate">
-                  {team.name}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {team.members} members • {team.tasks} tasks
-                </p>
-              </div>
-              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+
+              {teams.length === 0 ? (
+                <div className="flex flex-col items-start gap-3 py-2">
+                  <p className="text-sm" style={{ color: theme.colors.textSecondary }}>
+                    No teams yet.
+                  </p>
+                  <Link to="/teams" className="btn-primary btn-responsive">
+                    Create a team
+                  </Link>
+                </div>
+              ) : (
+                <ul className="space-y-1 sm:space-y-2">
+                  {teams.map((t) => (
+                    <li key={t._id}>
+                      <Link
+                        to="/teams"
+                        className="flex items-center gap-3 rounded-lg px-2 py-2.5 sm:py-2 -mx-1
+                                   hover:bg-black/5 dark:hover:bg-white/5 transition-colors
+                                   touch-manipulation min-h-[48px] sm:min-h-[44px]"
+                      >
+                        <div
+                          className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center
+                                     text-white text-xs font-bold flex-shrink-0"
+                          style={{ backgroundColor: t.color || '#3b82f6' }}
+                        >
+                          {t.icon || 'TM'}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold truncate" style={{ color: theme.colors.text }}>
+                            {t.name}
+                          </p>
+                          <p className="text-xs truncate" style={{ color: theme.colors.textSecondary }}>
+                            {t.members?.length || 0} members
+                          </p>
+                        </div>
+                        <svg className="w-4 h-4 flex-shrink-0 text-gray-400 dark:text-slate-500 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
-          ))}
-        </div>
-      </div>
+
+            {/* Tasks */}
+            <div
+              className="rounded-xl border p-3.5 sm:p-5 flex flex-col min-h-0"
+              style={{ backgroundColor: theme.colors.surface, borderColor: theme.colors.border }}
+            >
+              <div className="section-header !mb-3 sm:!mb-4">
+                <h2 className="font-bold text-base sm:text-lg" style={{ color: theme.colors.text }}>
+                  Recent tasks
+                </h2>
+                <Link to="/tasks" className="btn-link self-start sm:self-auto -ml-2 sm:ml-0">
+                  View all
+                </Link>
+              </div>
+
+              {recentTasks.length === 0 ? (
+                <div className="flex flex-col items-start gap-3 py-2">
+                  <p className="text-sm" style={{ color: theme.colors.textSecondary }}>
+                    No tasks yet.
+                  </p>
+                  <Link to="/tasks" className="btn-primary btn-responsive">
+                    Create a task
+                  </Link>
+                </div>
+              ) : (
+                <ul className="space-y-1 sm:space-y-2">
+                  {recentTasks.map((t) => (
+                    <li key={t._id}>
+                      <Link
+                        to="/tasks"
+                        className="flex items-center gap-2 sm:gap-3 rounded-lg px-2 py-2.5 sm:py-2 -mx-1
+                                   hover:bg-black/5 dark:hover:bg-white/5 transition-colors
+                                   touch-manipulation min-h-[48px] sm:min-h-[44px]"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold truncate" style={{ color: theme.colors.text }}>
+                            {t.title}
+                          </p>
+                          <p className="text-xs truncate" style={{ color: theme.colors.textSecondary }}>
+                            {t.team?.name || 'Team'} · {t.status}
+                          </p>
+                        </div>
+                        <span
+                          className={`text-[10px] sm:text-xs font-semibold uppercase tracking-wide
+                                      px-2 py-1 rounded-md flex-shrink-0 ${priorityBadge(t.priority)}`}
+                        >
+                          {t.priority}
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </section>
+        </>
+      )}
     </div>
   );
 };
