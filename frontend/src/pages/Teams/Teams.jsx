@@ -1,25 +1,94 @@
-// frontend/src/pages/Teams/Teams.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
-import useAuthGate from '../../hooks/useAuthGate';
+import { useAuth } from '../../contexts/AuthContext';
+import API from '../../services/api';
+
+const displayName = (u) => {
+  if (!u) return '?';
+  const first = u.firstName || u.first_name || '';
+  const last = u.lastName || u.last_name || '';
+  return `${first} ${last}`.trim() || u.email || 'User';
+};
+
+const initials = (u) => {
+  const name = displayName(u);
+  const parts = name.split(' ').filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return name.slice(0, 2).toUpperCase();
+};
 
 const Teams = () => {
   const { theme } = useTheme();
-  const { gate, AuthGate } = useAuthGate();
+  const { user } = useAuth();
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [form, setForm] = useState({ name: '', description: '' });
+  const [inviteCode, setInviteCode] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    const mockTeams = [
-      { id: 1, name: 'UI/UX Design Team',      description: 'Designing beautiful user experiences',    icon: 'UI', color: theme.colors.primary,   members: [{ id: 1, name: 'Naol Gonfa', initials: 'NG' }, { id: 2, name: 'Asefa Niguse', initials: 'AN' }, { id: 3, name: 'Ermiyas Abebe', initials: 'EA' }, { id: 4, name: 'Tola Fayisa', initials: 'TF' }], tasksCompleted: 8,  totalTasks: 12, userRole: 'Leader' },
-      { id: 2, name: 'Backend Development',     description: 'Building robust APIs and databases',      icon: 'BE', color: theme.colors.secondary, members: [{ id: 5, name: 'Fikru Bekele', initials: 'FB' }, { id: 6, name: 'Yisiyaq Gezehany', initials: 'YG' }, { id: 7, name: 'Abebe Alemu', initials: 'AA' }], tasksCompleted: 14, totalTasks: 18, userRole: 'Member' },
-      { id: 3, name: 'Research & Analysis',     description: 'User research and data analysis',         icon: 'RE', color: theme.colors.success,   members: [{ id: 8, name: 'Mekonnen Niguse', initials: 'MN' }, { id: 9, name: 'Mahlet Ibrahim', initials: 'MI' }], tasksCompleted: 4,  totalTasks: 6,  userRole: 'Member' },
-      { id: 4, name: 'Mobile Development',      description: 'Cross-platform mobile applications',      icon: 'MD', color: theme.colors.warning,   members: [{ id: 10, name: 'Birhanu Endris', initials: 'BE' }, { id: 11, name: 'Rahel Seid', initials: 'RS' }, { id: 12, name: 'Bethelehem Mekonnen', initials: 'BM' }], tasksCompleted: 9,  totalTasks: 15, userRole: 'Member' },
-      { id: 5, name: 'DevOps & Infrastructure', description: 'Deployment pipelines and cloud',          icon: 'DO', color: theme.colors.danger,    members: [{ id: 13, name: 'Alemayehu Niguse', initials: 'AN' }, { id: 14, name: 'Ermiyas Abebe', initials: 'EA' }], tasksCompleted: 7,  totalTasks: 8,  userRole: 'Member' },
-    ];
-    setTimeout(() => { setTeams(mockTeams); setLoading(false); }, 600);
+  const fetchTeams = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const res = await API.get('/teams');
+      setTeams(res.data.data || []);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to load teams');
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => { fetchTeams(); }, [fetchTeams]);
+
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    if (!form.name.trim()) {
+      setError('Team name is required');
+      return;
+    }
+    setSubmitting(true);
+    setError('');
+    try {
+      await API.post('/teams', {
+        name: form.name.trim(),
+        description: form.description.trim() || 'No description provided',
+      });
+      setShowCreateModal(false);
+      setForm({ name: '', description: '' });
+      await fetchTeams();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to create team');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleJoin = async (e) => {
+    e.preventDefault();
+    if (!inviteCode.trim()) return;
+    setSubmitting(true);
+    setError('');
+    try {
+      await API.post('/teams/join', { inviteCode: inviteCode.trim() });
+      setShowJoinModal(false);
+      setInviteCode('');
+      await fetchTeams();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to join team');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const myRole = (team) => {
+    const uid = (user?.id || user?._id)?.toString();
+    if (team.leader?._id?.toString() === uid || team.leader?.toString() === uid) return 'Leader';
+    return 'Member';
+  };
 
   if (loading) {
     return (
@@ -31,75 +100,170 @@ const Teams = () => {
 
   return (
     <div className="space-y-5">
-      <AuthGate />
-
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <h1 className="text-xl sm:text-2xl font-bold" style={{ color: theme.colors.text }}>Teams</h1>
-          <p className="text-sm mt-0.5" style={{ color: theme.colors.textSecondary }}>Manage and collaborate with your project teams</p>
+          <p className="text-sm mt-0.5" style={{ color: theme.colors.textSecondary }}>
+            Manage and collaborate with your project teams
+          </p>
         </div>
-        <button
-          onClick={() => gate('create a team', () => setShowCreateModal(true))}
-          className="self-start sm:self-auto flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors hover:opacity-90"
-          style={{ backgroundColor: theme.colors.primary }}
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-          Create Team
-        </button>
+        <div className="page-actions">
+          <button
+            type="button"
+            onClick={() => { setError(''); setShowJoinModal(true); }}
+            className="btn-secondary btn-responsive"
+          >
+            Join Team
+          </button>
+          <button
+            type="button"
+            onClick={() => { setError(''); setShowCreateModal(true); }}
+            className="btn-primary btn-responsive"
+          >
+            Create Team
+          </button>
+        </div>
       </div>
 
-      {/* Teams Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-        {teams.map((team) => {
-          const progress = Math.round((team.tasksCompleted / team.totalTasks) * 100);
-          return (
-            <div
-              key={team.id}
-              className="rounded-xl p-5 border transition-all duration-200 hover:-translate-y-1 hover:shadow-md cursor-pointer"
-              style={{ backgroundColor: theme.colors.surface, borderColor: theme.colors.border }}
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white font-bold text-base flex-shrink-0" style={{ backgroundColor: team.color }}>
-                  {team.icon}
-                </div>
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${team.color}20`, color: team.color }}>
-                  {team.userRole}
-                </span>
-              </div>
-              <h3 className="font-bold text-base mb-1 truncate" style={{ color: theme.colors.text }}>{team.name}</h3>
-              <p className="text-sm mb-4 line-clamp-2" style={{ color: theme.colors.textSecondary }}>{team.description}</p>
-              <div className="flex items-center gap-1 mb-3">
-                {team.members.slice(0, 5).map((m) => (
-                  <div key={m.id} title={m.name} className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold border-2 border-white -ml-1 first:ml-0" style={{ backgroundColor: `${team.color}30`, color: team.color }}>
-                    {m.initials}
+      {error && !showCreateModal && !showJoinModal && (
+        <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">{error}</div>
+      )}
+
+      {teams.length === 0 ? (
+        <div className="text-center py-16 rounded-xl border" style={{ borderColor: theme.colors.border, color: theme.colors.textSecondary }}>
+          <p className="text-sm mb-3">You are not in any teams yet.</p>
+          <button
+            type="button"
+            onClick={() => setShowCreateModal(true)}
+            className="btn-primary btn-responsive"
+          >
+            Create your first team
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+          {teams.map((team) => {
+            const members = (team.members || []).map((m) => m.user || m).filter(Boolean);
+            const color = team.color || theme.colors.primary;
+            return (
+              <div
+                key={team._id}
+                className="rounded-xl p-5 border transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
+                style={{ backgroundColor: theme.colors.surface, borderColor: theme.colors.border }}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div
+                    className="w-11 h-11 rounded-xl flex items-center justify-center text-white font-bold text-base"
+                    style={{ backgroundColor: color }}
+                  >
+                    {team.icon || 'TM'}
                   </div>
-                ))}
-                {team.members.length > 5 && (
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold border-2 border-white -ml-1 bg-gray-100 text-gray-600">+{team.members.length - 5}</div>
-                )}
-                <span className="ml-2 text-xs" style={{ color: theme.colors.textSecondary }}>{team.members.length} members</span>
+                  <span
+                    className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                    style={{ backgroundColor: `${color}20`, color }}
+                  >
+                    {myRole(team)}
+                  </span>
+                </div>
+                <h3 className="font-bold text-base mb-1 truncate" style={{ color: theme.colors.text }}>
+                  {team.name}
+                </h3>
+                <p className="text-sm mb-3 line-clamp-2" style={{ color: theme.colors.textSecondary }}>
+                  {team.description}
+                </p>
+                <div className="flex items-center gap-1 mb-3">
+                  {members.slice(0, 5).map((m) => (
+                    <div
+                      key={m._id || m.id}
+                      title={displayName(m)}
+                      className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold border-2 border-white -ml-1 first:ml-0"
+                      style={{ backgroundColor: `${color}30`, color }}
+                    >
+                      {initials(m)}
+                    </div>
+                  ))}
+                  <span className="ml-2 text-xs" style={{ color: theme.colors.textSecondary }}>
+                    {members.length} members
+                  </span>
+                </div>
+                <p className="text-xs" style={{ color: theme.colors.textSecondary }}>
+                  Invite code: <span className="font-mono font-semibold" style={{ color: theme.colors.text }}>{team.inviteCode}</span>
+                </p>
               </div>
-              <div className="h-1.5 rounded-full overflow-hidden mb-1.5" style={{ backgroundColor: theme.colors.border }}>
-                <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, backgroundColor: team.color }} />
-              </div>
-              <div className="flex justify-between text-xs" style={{ color: theme.colors.textSecondary }}>
-                <span>{team.tasksCompleted}/{team.totalTasks} tasks</span>
-                <span>{progress}%</span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
-      {/* Create Team Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="w-full max-w-md rounded-xl p-6 shadow-xl" style={{ backgroundColor: theme.colors.surface }}>
-            <h2 className="text-lg font-bold mb-2" style={{ color: theme.colors.text }}>Create New Team</h2>
-            <p className="text-sm mb-5" style={{ color: theme.colors.textSecondary }}>Team creation functionality will be implemented here.</p>
-            <button onClick={() => setShowCreateModal(false)} className="px-4 py-2 rounded-lg text-sm font-semibold text-white" style={{ backgroundColor: theme.colors.primary }}>Close</button>
-          </div>
+          <form
+            onSubmit={handleCreate}
+            className="w-full max-w-md rounded-xl p-6 shadow-xl space-y-4"
+            style={{ backgroundColor: theme.colors.surface }}
+          >
+            <h2 className="text-lg font-bold" style={{ color: theme.colors.text }}>Create New Team</h2>
+            {error && <p className="text-sm text-red-600">{error}</p>}
+            <div>
+              <label className="block text-xs font-semibold mb-1" style={{ color: theme.colors.text }}>Name</label>
+              <input
+                className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
+                style={{ backgroundColor: theme.colors.background, borderColor: theme.colors.border, color: theme.colors.text }}
+                value={form.name}
+                onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                placeholder="Team name"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold mb-1" style={{ color: theme.colors.text }}>Description</label>
+              <textarea
+                className="w-full px-3 py-2 rounded-lg border text-sm outline-none"
+                style={{ backgroundColor: theme.colors.background, borderColor: theme.colors.border, color: theme.colors.text }}
+                value={form.description}
+                onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+                placeholder="What is this team for?"
+                rows={3}
+              />
+            </div>
+            <div className="btn-group pt-1">
+              <button type="button" onClick={() => setShowCreateModal(false)} className="btn-secondary btn-responsive">
+                Cancel
+              </button>
+              <button type="submit" disabled={submitting} className="btn-primary btn-responsive">
+                {submitting ? 'Creating...' : 'Create'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {showJoinModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <form
+            onSubmit={handleJoin}
+            className="w-full max-w-md rounded-xl p-6 shadow-xl space-y-4"
+            style={{ backgroundColor: theme.colors.surface }}
+          >
+            <h2 className="text-lg font-bold" style={{ color: theme.colors.text }}>Join Team</h2>
+            {error && <p className="text-sm text-red-600">{error}</p>}
+            <input
+              className="w-full px-3 py-2 rounded-lg border text-sm outline-none font-mono uppercase"
+              style={{ backgroundColor: theme.colors.background, borderColor: theme.colors.border, color: theme.colors.text }}
+              value={inviteCode}
+              onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+              placeholder="INVITE CODE"
+              required
+            />
+            <div className="btn-group pt-1">
+              <button type="button" onClick={() => setShowJoinModal(false)} className="btn-secondary btn-responsive">
+                Cancel
+              </button>
+              <button type="submit" disabled={submitting} className="btn-primary btn-responsive">
+                {submitting ? 'Joining...' : 'Join'}
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </div>
