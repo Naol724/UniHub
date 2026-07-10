@@ -61,7 +61,7 @@ const selectCls =
   "w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500";
 
 const Settings = () => {
-  const { theme, setThemeByName } = useTheme();
+  const { theme, setThemeByName, currentTheme } = useTheme();
   const { user } = useAuth();
   const { gate, AuthGate } = useAuthGate();
 
@@ -362,7 +362,7 @@ const Settings = () => {
                 <Toggle label="Show online status" checked={settings.privacy && settings.privacy.showOnlineStatus !== undefined ? settings.privacy.showOnlineStatus : true} onChange={(v) => set("privacy", "showOnlineStatus", v)} />
                 <Toggle label="Allow search by email" checked={settings.privacy && settings.privacy.allowSearchByEmail !== undefined ? settings.privacy.allowSearchByEmail : true} onChange={(v) => set("privacy", "allowSearchByEmail", v)} />
               </Section>
-              <button onClick={() => save("privacy", "/settings/privacy", settings.privacy)} disabled={saving} className="px-5 py-2 rounded-lg bg-blue-500 text-white text-sm font-semibold hover:bg-blue-600 disabled:opacity-60 transition">
+              <button onClick={() => save("privacy", "/settings/privacy", settings.privacy)} disabled={saving} className="btn-primary btn-responsive">
                 {saving ? "Saving..." : "Save Privacy"}
               </button>
             </div>
@@ -398,7 +398,7 @@ const Settings = () => {
                   ))}
                 </Section>
               ))}
-              <button onClick={() => save("notifications", "/settings/notifications", settings.notifications)} disabled={saving} className="px-5 py-2 rounded-lg bg-blue-500 text-white text-sm font-semibold hover:bg-blue-600 disabled:opacity-60 transition">
+              <button onClick={() => save("notifications", "/settings/notifications", settings.notifications)} disabled={saving} className="btn-primary btn-responsive">
                 {saving ? "Saving..." : "Save Notifications"}
               </button>
             </div>
@@ -413,11 +413,12 @@ const Settings = () => {
                     {["light", "dark"].map((t) => (
                       <button
                         key={t}
+                        type="button"
                         onClick={() => handleThemeChange(t)}
-                        className={`flex-1 py-2 rounded-lg border text-sm font-medium transition ${
-                          (settings.appearance && settings.appearance.theme) === t
-                            ? "border-blue-500 bg-blue-50 text-blue-600"
-                            : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                        className={`flex-1 min-h-[44px] sm:min-h-0 py-2.5 sm:py-2 rounded-lg border text-sm font-medium transition touch-manipulation ${
+                          currentTheme === t || (settings.appearance && settings.appearance.theme) === t
+                            ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                            : "border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800"
                         }`}
                       >
                         {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -455,7 +456,7 @@ const Settings = () => {
                   </select>
                 </Field>
               </Section>
-              <button onClick={() => save("appearance", "/settings/appearance", settings.appearance)} disabled={saving} className="px-5 py-2 rounded-lg bg-blue-500 text-white text-sm font-semibold hover:bg-blue-600 disabled:opacity-60 transition">
+              <button onClick={() => save("appearance", "/settings/appearance", settings.appearance)} disabled={saving} className="btn-primary btn-responsive">
                 {saving ? "Saving..." : "Save Appearance"}
               </button>
             </div>
@@ -471,7 +472,7 @@ const Settings = () => {
                 <Toggle label="Enter to send" description="Press Enter to send (Shift+Enter for new line)" checked={settings.chat && settings.chat.enterToSend !== undefined ? settings.chat.enterToSend : false} onChange={(v) => set("chat", "enterToSend", v)} />
                 <Toggle label="Show online users" checked={settings.chat && settings.chat.showOnlineUsers !== undefined ? settings.chat.showOnlineUsers : true} onChange={(v) => set("chat", "showOnlineUsers", v)} />
               </Section>
-              <button onClick={() => save("chat", "/settings/chat", settings.chat)} disabled={saving} className="px-5 py-2 rounded-lg bg-blue-500 text-white text-sm font-semibold hover:bg-blue-600 disabled:opacity-60 transition">
+              <button onClick={() => save("chat", "/settings/chat", settings.chat)} disabled={saving} className="btn-primary btn-responsive">
                 {saving ? "Saving..." : "Save Chat Settings"}
               </button>
             </div>
@@ -493,7 +494,7 @@ const Settings = () => {
                   <Field label="Confirm New Password">
                     <input type="password" className={inputCls} value={pwData.confirmPassword} onChange={(e) => setPwData((p) => ({ ...p, confirmPassword: e.target.value }))} required />
                   </Field>
-                  <button type="submit" disabled={saving} className="px-5 py-2 rounded-lg bg-blue-500 text-white text-sm font-semibold hover:bg-blue-600 disabled:opacity-60 transition">
+                  <button type="submit" disabled={saving} className="btn-primary btn-responsive">
                     {saving ? "Saving..." : "Change Password"}
                   </button>
                 </form>
