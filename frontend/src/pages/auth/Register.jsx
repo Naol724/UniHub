@@ -1,5 +1,13 @@
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import { useTheme } from "../../contexts/ThemeContext";
+import ThemeToggle from "../../components/ThemeToggle";
 
-// Register page component with full form validation and password matchimport { useState } from "react";
+const getGoogleAuthUrl = () => {
+  const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  return `${baseUrl.replace(/\/api\/?$/, "")}/api/google`;
+};
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +19,15 @@ const Register = () => {
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { register, isAuthenticated } = useAuth();
+  const { theme } = useTheme();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const validate = () => {
     const newErrors = {};
@@ -56,57 +73,51 @@ const Register = () => {
       return;
     }
     setIsSubmitting(true);
+    setErrors({});
     try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        // Store token and user data
-        localStorage.setItem('UniHub-Haramaya-Dev', data.token);
-        localStorage.setItem('UniHub-User', JSON.stringify(data.user));
-        window.location.href = '/dashboard';
-      } else {
-        setErrors({ general: data.message });
-      }
+      await register(formData);
+      navigate("/", { replace: true });
     } catch (error) {
-      setErrors({ general: 'Network error. Please try again.' });
+      const msg =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Network error. Please try again.";
+      setErrors({ general: msg });
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
 
   const handleGoogle = () => {
-    // Redirect to Google OAuth endpoint
-    window.location.href = 'http://localhost:5000/api/google';
+    window.location.href = getGoogleAuthUrl();
   };
 
   const inputStyle = (field) => ({
     padding: "9px 13px",
     borderRadius: "10px",
-    background: errors[field] ? "#fff5f5" : "#f8fafc",
-    border: errors[field] ? "1px solid #f87171" : "1px solid #e2e8f0",
+    background: errors[field] ? "#fff5f5" : theme.colors.background,
+    border: errors[field] ? "1px solid #f87171" : `1px solid ${theme.colors.border}`,
+    color: theme.colors.text,
   });
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-10">
-      {/* Card */}
+    <div
+      className="min-h-screen flex items-center justify-center px-4 py-10 relative"
+      style={{ backgroundColor: theme.colors.background }}
+    >
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <div
-        className="w-full bg-white"
+        className="w-full"
         style={{
           maxWidth: "380px",
           borderRadius: "20px",
           padding: "36px 32px",
-          boxShadow:
-            "0 4px 6px -1px rgba(0,0,0,0.07), 0 10px 40px -4px rgba(0,0,0,0.10)",
+          backgroundColor: theme.colors.surface,
+          boxShadow: `0 4px 6px -1px ${theme.colors.shadow}, 0 10px 40px -4px ${theme.colors.shadow}`,
         }}
       >
-        {/* Logo */}
         <div className="flex justify-center mb-5">
           <div
             className="flex items-center justify-center w-12 h-12"
@@ -133,18 +144,16 @@ const Register = () => {
           </div>
         </div>
 
-        {/* Title */}
         <h1
-          className="text-center font-bold text-gray-900 mb-1"
-          style={{ fontSize: "20px" }}
+          className="text-center font-bold mb-1"
+          style={{ fontSize: "20px", color: theme.colors.text }}
         >
           Create account
         </h1>
 
-        {/* Subtitle */}
         <p
-          className="text-center text-gray-400 mb-6"
-          style={{ fontSize: "13px" }}
+          className="text-center mb-6"
+          style={{ fontSize: "13px", color: theme.colors.textSecondary }}
         >
           Join UniHub and start collaborating
         </p>
@@ -156,7 +165,6 @@ const Register = () => {
         )}
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
-          {/* First Name + Last Name */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label
@@ -211,7 +219,6 @@ const Register = () => {
             </div>
           </div>
 
-          {/* University Email */}
           <div>
             <label
               htmlFor="email"
@@ -238,7 +245,6 @@ const Register = () => {
             )}
           </div>
 
-          {/* Password */}
           <div>
             <label
               htmlFor="password"
@@ -265,7 +271,6 @@ const Register = () => {
             )}
           </div>
 
-          {/* Confirm Password */}
           <div>
             <label
               htmlFor="confirmPassword"
@@ -292,46 +297,28 @@ const Register = () => {
             )}
           </div>
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full text-white text-sm transition disabled:opacity-60"
-            style={{
-              background: "linear-gradient(90deg, #3b82f6 0%, #2563eb 100%)",
-              borderRadius: "10px",
-              padding: "11px",
-              fontWeight: 600,
-              border: "none",
-              cursor: isSubmitting ? "not-allowed" : "pointer",
-              marginTop: "4px",
-            }}
+            className="btn-primary w-full"
           >
             {isSubmitting ? "Creating account..." : "Create account"}
           </button>
         </form>
 
-        {/* Divider */}
         <div className="flex items-center gap-3 my-4">
-          <div className="flex-1 h-px bg-gray-200" />
+          <div className="flex-1 h-px bg-gray-200 dark:bg-slate-600" />
           <span className="text-gray-400" style={{ fontSize: "12px" }}>
             or
           </span>
-          <div className="flex-1 h-px bg-gray-200" />
+          <div className="flex-1 h-px bg-gray-200 dark:bg-slate-600" />
         </div>
 
-        {/* Google Button */}
         <button
           type="button"
           onClick={handleGoogle}
-          className="w-full flex items-center justify-center gap-2 bg-white text-gray-700 text-sm font-medium transition hover:bg-gray-50"
-          style={{
-            border: "1px solid #e2e8f0",
-            borderRadius: "10px",
-            padding: "10px",
-          }}
+          className="btn-secondary w-full"
         >
-          {/* Google icon */}
           <svg width="18" height="18" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
             <path fill="#EA4335" d="M24 9.5c3.14 0 5.95 1.08 8.17 2.85l6.09-6.09C34.46 3.09 29.5 1 24 1 14.82 1 7.07 6.48 3.64 14.22l7.08 5.5C12.43 13.61 17.74 9.5 24 9.5z"/>
             <path fill="#4285F4" d="M46.52 24.5c0-1.64-.15-3.22-.42-4.75H24v9h12.7c-.55 2.96-2.2 5.47-4.68 7.16l7.18 5.57C43.44 37.27 46.52 31.36 46.52 24.5z"/>
@@ -341,12 +328,11 @@ const Register = () => {
           Sign up with Google
         </button>
 
-        {/* Footer */}
         <p className="text-center text-gray-400 mt-5" style={{ fontSize: "13px" }}>
           Already have an account?{" "}
-          <a href="/user/login" className="text-blue-500 font-medium hover:underline">
+          <Link to="/user/login" className="text-blue-500 font-medium hover:underline">
             Sign in
-          </a>
+          </Link>
         </p>
       </div>
     </div>

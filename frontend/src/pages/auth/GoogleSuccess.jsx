@@ -27,19 +27,19 @@ const GoogleSuccess = () => {
           return;
         }
 
-        const user = JSON.parse(decodeURIComponent(userStr));
+        // URLSearchParams already decodes — do not double-decode
+        const user = JSON.parse(userStr);
         console.log("[Google OAuth] Parsed user:", user);
-        
-        // Use the AuthContext login method with Google login flag
+
         await login({ token, user }, true);
         console.log("[Google OAuth] Login successful, redirecting to dashboard");
-        
-        // Navigate to dashboard (not /dashboard, as the route is /)
+
+        // Clear sensitive query params from the address bar
+        window.history.replaceState({}, document.title, "/auth/google/success");
         navigate("/", { replace: true });
-        
-      } catch (error) {
-        console.error("[Google OAuth] Error:", error);
-        setError(error.message || "Authentication failed");
+      } catch (err) {
+        console.error("[Google OAuth] Error:", err);
+        setError(err.message || "Authentication failed");
         setTimeout(() => {
           navigate("/user/login?error=google_failed", { replace: true });
         }, 2000);
