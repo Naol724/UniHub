@@ -13,21 +13,15 @@ import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// All routes require authentication
 router.use(protect);
 
-// Team CRUD routes
-router.post('/', createTeam); // Create a new team
-router.get('/', getUserTeams); // Get all teams for current user
-router.get('/:id', getTeamById); // Get single team by ID
-router.put('/:id', updateTeam); // Update team details (leader only)
-router.delete('/:id', deleteTeam); // Delete team (leader only)
-
-// Team member management
-router.post('/:id/invite', inviteMember); // Invite member to team (leader only)
-router.post('/join', joinTeam); // Join team via invite code
-
-// Remove member from team (leader only)
+router.post('/', createTeam);
+router.get('/', getUserTeams);
+router.post('/join', joinTeam); // before /:id
+router.get('/:id', getTeamById);
+router.put('/:id', updateTeam);
+router.delete('/:id', deleteTeam);
+router.post('/:id/invite', inviteMember);
 router.delete('/:id/members/:memberId', removeMember);
 
 export default router;
