@@ -1,63 +1,52 @@
-// frontend/src/pages/Messages/Messages.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
-import useAuthGate from '../../hooks/useAuthGate';
+import API from '../../services/api';
 
+/**
+ * Messages page — team conversation list backed by real teams.
+ * Full realtime chat can be expanded later; this removes mock data
+ * and gives users a working entry point tied to their teams.
+ */
 const Messages = () => {
   const { theme } = useTheme();
-  const { gate, AuthGate } = useAuthGate();
-  const [conversations, setConversations] = useState([]);
-  const [activeConversation, setActiveConversation] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
+  const [teams, setTeams] = useState([]);
+  const [activeTeam, setActiveTeam] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showList, setShowList] = useState(true); // mobile: toggle between list and chat
-  const messagesEndRef = useRef(null);
+  const [error, setError] = useState('');
+  const [draft, setDraft] = useState('');
+  const [notes, setNotes] = useState({});
 
-  useEffect(() => {
-    const mockConversations = [
-      { id: 1, name: 'UI/UX Team',    type: 'team',   icon: 'UI', color: theme.colors.primary,   lastMessage: 'Great work on designs!',   timestamp: '10:30 AM', unreadCount: 3, isOnline: true,  memberCount: 4 },
-      { id: 2, name: 'Naol Gonfa',    type: 'direct', icon: 'NG', color: '#6366f1',               lastMessage: 'Can you review mockups?',  timestamp: '9:45 AM',  unreadCount: 1, isOnline: true,  memberCount: 1 },
-      { id: 3, name: 'Backend Team',  type: 'team',   icon: 'BE', color: theme.colors.secondary,  lastMessage: 'API endpoints ready',      timestamp: 'Yesterday',unreadCount: 0, isOnline: false, memberCount: 3 },
-      { id: 4, name: 'Asefa Niguse',  type: 'direct', icon: 'AN', color: '#8b5cf6',               lastMessage: 'Thanks for the help!',     timestamp: 'Yesterday',unreadCount: 0, isOnline: false, memberCount: 1 },
-      { id: 5, name: 'Research Team', type: 'team',   icon: 'RT', color: theme.colors.success,    lastMessage: 'Survey results are in',    timestamp: '2 days ago',unreadCount: 5, isOnline: false, memberCount: 2 },
-    ];
-    const mockMessages = [
-      { id: 1, senderName: 'Naol Gonfa',  senderInitials: 'NG', content: 'Hey team! Just finished the new dashboard designs. Let me know what you think!', timestamp: '10:30 AM', isOwn: false },
-      { id: 2, senderName: 'You',         senderInitials: 'ME', content: 'These look amazing! Love the color scheme and layout.',                           timestamp: '10:32 AM', isOwn: true  },
-      { id: 3, senderName: 'Asefa Niguse',senderInitials: 'AN', content: 'Great work! Should we add hover states for the activity feed?',                   timestamp: '10:35 AM', isOwn: false },
-      { id: 4, senderName: 'You',         senderInitials: 'ME', content: 'Good point! A subtle background change on hover would work great.',               timestamp: '10:38 AM', isOwn: true  },
-    ];
-    setTimeout(() => {
-      setConversations(mockConversations);
-      setMessages(mockMessages);
-      setActiveConversation(mockConversations[0]);
+  const fetchTeams = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await API.get('/teams');
+      const list = res.data.data || [];
+      setTeams(list);
+      if (list.length) setActiveTeam(list[0]);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to load conversations');
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   }, []);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  useEffect(() => { fetchTeams(); }, [fetchTeams]);
 
-  const handleSend = () => {
-    gate('send a message', () => {
-      if (!newMessage.trim()) return;
-      setMessages((prev) => [...prev, {
-        id: prev.length + 1, senderName: 'You', senderInitials: 'ME',
-        content: newMessage, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), isOwn: true,
-      }]);
-      setNewMessage('');
-    });
-  };
+  const teamNotes = activeTeam ? (notes[activeTeam._id] || []) : [];
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
-  };
-
-  const selectConversation = (conv) => {
-    setActiveConversation(conv);
-    setShowList(false); // on mobile, switch to chat view
+  const sendNote = () => {
+    if (!draft.trim() || !activeTeam) return;
+    const entry = {
+      id: Date.now(),
+      content: draft.trim(),
+      at: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isOwn: true,
+    };
+    setNotes((prev) => ({
+      ...prev,
+      [activeTeam._id]: [...(prev[activeTeam._id] || []), entry],
+    }));
+    setDraft('');
   };
 
   if (loading) {
@@ -69,135 +58,77 @@ const Messages = () => {
   }
 
   return (
-    <div className="flex gap-4 h-[calc(100vh-7rem)]">
-      <AuthGate />
-      {/* Conversation list */}
-      <aside
-        className={`flex-shrink-0 w-full sm:w-72 flex flex-col rounded-xl border overflow-hidden ${
-          showList ? 'flex' : 'hidden sm:flex'
-        }`}
-        style={{ backgroundColor: theme.colors.surface, borderColor: theme.colors.border }}
-      >
-        <div className="px-4 py-3 border-b font-semibold text-sm flex-shrink-0" style={{ borderColor: theme.colors.border, color: theme.colors.text }}>
-          Conversations
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          {conversations.map((conv) => (
-            <button
-              key={conv.id}
-              onClick={() => selectConversation(conv)}
-              className="w-full flex items-center gap-3 px-4 py-3 border-b text-left transition-colors hover:bg-gray-50"
-              style={{
-                borderColor: theme.colors.border,
-                backgroundColor: activeConversation?.id === conv.id ? `${theme.colors.primary}10` : 'transparent',
-              }}
-            >
-              <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ backgroundColor: conv.color }}>
-                {conv.icon}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-1">
-                  <span className="text-sm font-semibold truncate" style={{ color: theme.colors.text }}>{conv.name}</span>
-                  <span className="text-xs flex-shrink-0" style={{ color: theme.colors.textSecondary }}>{conv.timestamp}</span>
-                </div>
-                <p className="text-xs truncate mt-0.5" style={{ color: theme.colors.textSecondary }}>{conv.lastMessage}</p>
-              </div>
-              {conv.unreadCount > 0 && (
-                <span className="flex-shrink-0 min-w-[20px] h-5 px-1.5 rounded-full text-xs font-bold text-white flex items-center justify-center" style={{ backgroundColor: theme.colors.primary }}>
-                  {conv.unreadCount}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-      </aside>
+    <div className="space-y-4">
+      <div>
+        <h1 className="text-xl sm:text-2xl font-bold" style={{ color: theme.colors.text }}>Messages</h1>
+        <p className="text-sm mt-0.5" style={{ color: theme.colors.textSecondary }}>
+          Team spaces for quick notes. Create a team to start collaborating.
+        </p>
+      </div>
 
-      {/* Chat panel */}
-      <div
-        className={`flex-1 flex flex-col rounded-xl border overflow-hidden min-w-0 ${
-          !showList ? 'flex' : 'hidden sm:flex'
-        }`}
-        style={{ backgroundColor: theme.colors.surface, borderColor: theme.colors.border }}
-      >
-        {activeConversation ? (
-          <>
-            {/* Chat header */}
-            <div className="flex items-center gap-3 px-4 py-3 border-b flex-shrink-0" style={{ borderColor: theme.colors.border }}>
-              {/* Back button on mobile */}
+      {error && <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">{error}</div>}
+
+      {teams.length === 0 ? (
+        <div className="text-center py-16 rounded-xl border" style={{ borderColor: theme.colors.border, color: theme.colors.textSecondary }}>
+          <p className="text-sm">No team conversations yet. Create a team first.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 min-h-[420px]">
+          <div className="rounded-xl border overflow-hidden" style={{ borderColor: theme.colors.border, backgroundColor: theme.colors.surface }}>
+            {teams.map((t) => (
               <button
-                onClick={() => setShowList(true)}
-                className="sm:hidden p-1.5 rounded-lg hover:bg-gray-100 transition-colors flex-shrink-0"
-                aria-label="Back to conversations"
+                key={t._id}
+                type="button"
+                onClick={() => setActiveTeam(t)}
+                className="w-full flex items-center gap-3 p-3 text-left border-b min-h-[56px] touch-manipulation transition-colors"
+                style={{
+                  borderColor: theme.colors.border,
+                  backgroundColor: activeTeam?._id === t._id ? `${theme.colors.primary}10` : 'transparent',
+                }}
               >
-                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: t.color || theme.colors.primary }}>
+                  {t.icon || 'TM'}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: theme.colors.text }}>{t.name}</p>
+                  <p className="text-xs" style={{ color: theme.colors.textSecondary }}>{t.members?.length || 0} members</p>
+                </div>
               </button>
-              <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ backgroundColor: activeConversation.color }}>
-                {activeConversation.icon}
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-bold truncate" style={{ color: theme.colors.text }}>{activeConversation.name}</p>
-                <p className="text-xs" style={{ color: theme.colors.textSecondary }}>
-                  {activeConversation.type === 'team' ? `${activeConversation.memberCount} members · ` : ''}
-                  {activeConversation.isOnline ? '🟢 Online' : '⚫ Offline'}
-                </p>
-              </div>
-            </div>
+            ))}
+          </div>
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
-              {messages.map((msg) => (
-                <div key={msg.id} className={`flex gap-2 max-w-[85%] sm:max-w-[75%] ${msg.isOwn ? 'self-end flex-row-reverse' : 'self-start'}`}>
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 self-end" style={{ backgroundColor: theme.colors.primary }}>
-                    {msg.senderInitials}
-                  </div>
-                  <div>
-                    {!msg.isOwn && <p className="text-xs font-semibold mb-1" style={{ color: theme.colors.textSecondary }}>{msg.senderName}</p>}
-                    <div
-                      className="px-3 py-2 rounded-2xl text-sm leading-relaxed"
-                      style={{
-                        backgroundColor: msg.isOwn ? theme.colors.primary : theme.colors.border,
-                        color: msg.isOwn ? '#fff' : theme.colors.text,
-                        borderBottomRightRadius: msg.isOwn ? '4px' : '16px',
-                        borderBottomLeftRadius: msg.isOwn ? '16px' : '4px',
-                      }}
-                    >
-                      {msg.content}
-                    </div>
-                    <p className={`text-xs mt-1 ${msg.isOwn ? 'text-right' : ''}`} style={{ color: theme.colors.textSecondary }}>{msg.timestamp}</p>
-                  </div>
-                </div>
-              ))}
-              <div ref={messagesEndRef} />
+          <div className="md:col-span-2 rounded-xl border flex flex-col" style={{ borderColor: theme.colors.border, backgroundColor: theme.colors.surface }}>
+            <div className="p-4 border-b font-semibold" style={{ borderColor: theme.colors.border, color: theme.colors.text }}>
+              {activeTeam?.name || 'Select a team'}
             </div>
-
-            {/* Input */}
-            <div className="flex items-center gap-2 px-4 py-3 border-t flex-shrink-0" style={{ borderColor: theme.colors.border }}>
+            <div className="flex-1 p-4 space-y-3 overflow-y-auto min-h-[260px]">
+              {teamNotes.length === 0 ? (
+                <p className="text-sm" style={{ color: theme.colors.textSecondary }}>No notes yet. Write something below.</p>
+              ) : (
+                teamNotes.map((m) => (
+                  <div key={m.id} className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${m.isOwn ? 'ml-auto text-white' : ''}`} style={{ backgroundColor: m.isOwn ? theme.colors.primary : theme.colors.background, color: m.isOwn ? '#fff' : theme.colors.text }}>
+                    <p>{m.content}</p>
+                    <p className="text-[10px] mt-1 opacity-70">{m.at}</p>
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="p-3 border-t flex flex-col sm:flex-row gap-2" style={{ borderColor: theme.colors.border }}>
               <input
-                type="text"
-                className="flex-1 min-w-0 px-3 py-2 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 min-h-[44px] sm:min-h-0 px-3 py-2.5 sm:py-2 rounded-lg border text-sm outline-none"
                 style={{ backgroundColor: theme.colors.background, borderColor: theme.colors.border, color: theme.colors.text }}
-                placeholder="Type a message..."
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyDown={handleKeyDown}
+                placeholder="Write a note..."
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && sendNote()}
               />
-              <button
-                onClick={handleSend}
-                className="flex-shrink-0 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors hover:opacity-90"
-                style={{ backgroundColor: theme.colors.primary }}
-              >
+              <button type="button" onClick={sendNote} className="btn-primary btn-responsive sm:w-auto">
                 Send
               </button>
             </div>
-          </>
-        ) : (
-          <div className="flex-1 flex items-center justify-center" style={{ color: theme.colors.textSecondary }}>
-            <p className="text-sm">Select a conversation to start messaging</p>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
