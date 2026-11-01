@@ -6,7 +6,8 @@ import ThemeToggle from "../../components/ThemeToggle";
 
 const getGoogleAuthUrl = () => {
   const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-  return `${baseUrl.replace(/\/api\/?$/, "")}/api/google`;
+  const origin = encodeURIComponent(window.location.origin);
+  return `${baseUrl.replace(/\/api\/?$/, "")}/api/google?returnTo=${origin}`;
 };
 
 const Login = () => {
@@ -20,7 +21,7 @@ const Login = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/", { replace: true });
+      navigate("/dashboard", { replace: true });
     }
   }, [isAuthenticated, navigate]);
 
@@ -32,6 +33,7 @@ const Login = () => {
       google_not_configured: "Google sign-in is not configured on the server.",
       google_callback_error: "Google authentication error. Please try again.",
       google_no_user: "Could not retrieve your Google account. Please try again.",
+      google_db_unavailable: "Database is offline. Allowlist your IP in MongoDB Atlas, then restart the backend.",
     };
     setErrors({ general: messages[error] || "Authentication failed. Please try again." });
   }, [searchParams]);
@@ -74,7 +76,7 @@ const Login = () => {
     setErrors({});
     try {
       await login(formData);
-      navigate("/", { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch (error) {
       const msg =
         error?.response?.data?.message ||

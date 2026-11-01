@@ -77,7 +77,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess, actionLabel = 'continue' }) => 
 
   const handleGoogleAuth = () => {
     const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    const googleAuthUrl = `${baseUrl.replace(/\/api\/?$/, '')}/api/google`;
+    const googleAuthUrl = `${baseUrl.replace(/\/api\/?$/, '')}/api/google?returnTo=${encodeURIComponent(window.location.origin)}`;
     console.log('🔗 Redirecting to Google OAuth:', googleAuthUrl);
     window.location.href = googleAuthUrl;
   };

@@ -1,5 +1,6 @@
 import express from "express";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import User from "../models/user-model.js";
@@ -12,6 +13,71 @@ let passportInitialized = false;
 const getFrontendUrl = () => currentConfig.FRONTEND_URL;
 const getJwtSecret = () => currentConfig.JWT_SECRET;
 const getCallbackUrl = () => currentConfig.GOOGLE_CALLBACK_URL;
+
+const DEFAULT_DEV_ORIGINS = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:5173",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:3001",
+  "http://127.0.0.1:5173",
+];
+
+const isAllowedFrontendOrigin = (origin) => {
+  if (!origin || typeof origin !== "string") return false;
+  try {
+    const url = new URL(origin);
+    const normalized = `${url.protocol}//${url.host}`;
+    const allowed = new Set(
+      [
+        getFrontendUrl(),
+        process.env.FRONTEND_URL,
+        ...DEFAULT_DEV_ORIGINS,
+      ]
+        .filter(Boolean)
+        .map((o) => {
+          try {
+            const u = new URL(o);
+            return `${u.protocol}//${u.host}`;
+          } catch {
+            return null;
+          }
+        })
+        .filter(Boolean)
+    );
+
+    if (allowed.has(normalized)) return true;
+    // Allow deployed Vercel preview/prod hosts if configured base is vercel
+    if (/\.vercel\.app$/i.test(url.hostname)) return true;
+    return false;
+  } catch {
+    return false;
+  }
+};
+
+const encodeOAuthState = (payload) =>
+  Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
+
+const decodeOAuthState = (state) => {
+  if (!state || typeof state !== "string") return {};
+  try {
+    return JSON.parse(Buffer.from(state, "base64url").toString("utf8"));
+  } catch {
+    try {
+      return JSON.parse(Buffer.from(state, "base64").toString("utf8"));
+    } catch {
+      return {};
+    }
+  }
+};
+
+const resolveFrontendRedirectBase = (req) => {
+  const fromState = decodeOAuthState(req.query.state).returnTo;
+  if (isAllowedFrontendOrigin(fromState)) {
+    return fromState.replace(/\/$/, "");
+  }
+  return getFrontendUrl().replace(/\/$/, "");
+};
 
 const initPassport = (app) => {
   console.log("🔍 Google OAuth Environment Check:");
@@ -42,7 +108,8 @@ const initPassport = (app) => {
   passport.use(new GoogleStrategy({
       clientID:     process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL:  getCallbackUrl()
+      callbackURL:  getCallbackUrl(),
+      passReqToCallback: false,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -108,23 +175,28 @@ const initPassport = (app) => {
 router.get("/", (req, res) => {
   console.log("🔗 Google OAuth Init - Redirecting to Google");
 
+  const requestedReturnTo = req.query.returnTo;
+  const returnTo = isAllowedFrontendOrigin(requestedReturnTo)
+    ? String(requestedReturnTo).replace(/\/$/, "")
+    : getFrontendUrl().replace(/\/$/, "");
+
   if (!passportInitialized) {
     console.log("❌ Google OAuth not configured - passport not initialized");
-    return res.status(503).json({
-      success: false,
-      message: "Google OAuth not configured",
-      debug: {
-        GOOGLE_CLIENT_ID: !!process.env.GOOGLE_CLIENT_ID,
-        GOOGLE_CLIENT_SECRET: !!process.env.GOOGLE_CLIENT_SECRET,
-        passportInitialized
-      }
-    });
+    return res.redirect(`${returnTo}/user/login?error=google_not_configured`);
   }
+
+  if (mongoose.connection.readyState !== 1) {
+    console.log("❌ Google OAuth blocked - MongoDB is not connected");
+    return res.redirect(`${returnTo}/user/login?error=google_db_unavailable`);
+  }
+
+  console.log("↩️  OAuth returnTo:", returnTo);
 
   passport.authenticate("google", {
     scope: ["profile", "email"],
     accessType: "offline",
-    prompt: "select_account"
+    prompt: "select_account",
+    state: encodeOAuthState({ returnTo }),
   })(req, res);
 });
 
@@ -132,13 +204,13 @@ router.get("/", (req, res) => {
 router.get("/callback", (req, res, next) => {
   console.log("🔗 Google OAuth Callback - Processing response");
 
-  const FRONTEND_URL = getFrontendUrl();
+  const FRONTEND_URL = resolveFrontendRedirectBase(req);
 
   res.set({
-    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-    'Pragma': 'no-cache',
-    'Expires': '0',
-    'Surrogate-Control': 'no-store'
+    "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+    Pragma: "no-cache",
+    Expires: "0",
+    "Surrogate-Control": "no-store",
   });
 
   if (!passportInitialized) {
@@ -148,7 +220,7 @@ router.get("/callback", (req, res, next) => {
 
   passport.authenticate("google", {
     failureRedirect: `${FRONTEND_URL}/user/login?error=google_failed`,
-    session: false
+    session: false,
   }, (err, user) => {
     if (err) {
       console.error("❌ Google OAuth Callback Error:", err);
@@ -162,7 +234,6 @@ router.get("/callback", (req, res, next) => {
 
     console.log("✅ Google OAuth Success - User:", user.email);
 
-    // Sign with the same secret used by authMiddleware (process.env.JWT_SECRET)
     const token = jwt.sign(
       { id: user._id, email: user.email },
       getJwtSecret(),
@@ -179,13 +250,12 @@ router.get("/callback", (req, res, next) => {
       department: user.department || ""
     };
 
-    // Send raw JWT only — frontend api.js adds the "Bearer " prefix
     const params = new URLSearchParams({
       token,
       user: JSON.stringify(userObj)
     });
 
-    console.log("🔄 Redirecting to frontend with token");
+    console.log("🔄 Redirecting to frontend with token:", FRONTEND_URL);
     res.redirect(`${FRONTEND_URL}/auth/google/success?${params}`);
   })(req, res, next);
 });

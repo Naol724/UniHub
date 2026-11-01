@@ -20,7 +20,7 @@ const Navbar = ({ user, isAuthenticated, onLogout, sidebarOpen, setSidebarOpen }
 
   const getPageTitle = () => {
     const path = location.pathname;
-    if (path === '/') return 'Dashboard';
+    if (path === '/dashboard' || path === '/') return 'Dashboard';
     const segment = path.split('/')[1];
     return segment ? segment.charAt(0).toUpperCase() + segment.slice(1) : 'Dashboard';
   };

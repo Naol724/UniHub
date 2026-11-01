@@ -1,5 +1,4 @@
 // frontend/src/App.jsx
-// Main routes now require authentication — login required to access app.
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
@@ -8,7 +7,7 @@ import Layout from './components/Layout';
 import ProtectRoute from './components/ProtectRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 
-// Main pages
+import Landing      from './pages/Landing/Landing';
 import Dashboard    from './pages/Dashboard/Dashboard';
 import Teams        from './pages/Teams/Teams';
 import Tasks        from './pages/Tasks/Tasks';
@@ -18,12 +17,10 @@ import Notifications from './pages/Notifications/Notifications';
 import Profile      from './pages/Profile/Profile';
 import Settings     from './pages/Settings/Settings';
 
-// Auth pages
 import Login         from './pages/auth/Login';
 import Register      from './pages/auth/Register';
 import GoogleSuccess from './pages/auth/GoogleSuccess';
 
-// Admin pages (still require admin auth)
 import AdminLayout    from './components/admin/AdminLayout';
 import AdminLogin     from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -40,32 +37,30 @@ function App() {
         <AuthProvider>
           <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <Routes>
-              {/* ── Auth routes — public (no authentication required) ─────────────────────────────── */}
+              <Route path="/" element={<Landing />} />
+
               <Route path="/user/login"    element={<Login />} />
               <Route path="/user/register" element={<Register />} />
               <Route path="/auth/google/success" element={<GoogleSuccess />} />
-              
-              {/* ── Legacy auth routes — redirect to new auth routes ───────────────── */}
+
               <Route path="/login"    element={<Navigate to="/user/login" replace />} />
               <Route path="/register" element={<Navigate to="/user/register" replace />} />
 
-              {/* ── Main app — requires authentication ─────────────────────────────── */}
-              <Route path="/" element={
+              <Route element={
                 <ProtectRoute>
                   <Layout />
                 </ProtectRoute>
               }>
-                <Route index element={<Dashboard />} />
-                <Route path="teams"         element={<Teams />} />
-                <Route path="tasks"         element={<Tasks />} />
-                <Route path="messages"      element={<Messages />} />
-                <Route path="resources"     element={<Resources />} />
-                <Route path="notifications" element={<Notifications />} />
-                <Route path="profile"       element={<Profile />} />
-                <Route path="settings"      element={<Settings />} />
+                <Route path="/dashboard"     element={<Dashboard />} />
+                <Route path="/teams"         element={<Teams />} />
+                <Route path="/tasks"         element={<Tasks />} />
+                <Route path="/messages"      element={<Messages />} />
+                <Route path="/resources"     element={<Resources />} />
+                <Route path="/notifications" element={<Notifications />} />
+                <Route path="/profile"       element={<Profile />} />
+                <Route path="/settings"      element={<Settings />} />
               </Route>
 
-              {/* ── Admin panel — still requires admin token ────────────── */}
               <Route path="/admin/login"    element={<AdminLogin />} />
               <Route path="/admin"          element={<AdminLayout />}>
                 <Route index                element={<Navigate to="/admin/dashboard" replace />} />
@@ -77,8 +72,7 @@ function App() {
                 <Route path="settings"      element={<AdminSettings />} />
               </Route>
 
-              {/* ── 404 fallback ─────────────────────────────────────────── */}
-              <Route path="*" element={<Navigate to="/user/login" replace />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Router>
         </AuthProvider>

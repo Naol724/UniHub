@@ -36,7 +36,7 @@ const GoogleSuccess = () => {
 
         // Clear sensitive query params from the address bar
         window.history.replaceState({}, document.title, "/auth/google/success");
-        navigate("/", { replace: true });
+        navigate("/dashboard", { replace: true });
       } catch (err) {
         console.error("[Google OAuth] Error:", err);
         setError(err.message || "Authentication failed");

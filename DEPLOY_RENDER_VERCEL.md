@@ -4,6 +4,10 @@ Use this checklist when filling the Render and Vercel dashboards.
 
 ---
 
+
+> **After pushing to GitHub:** Render and Vercel (if linked to this repo) can Manual Deploy from `main`.
+> Public landing is `/`; app dashboard is `/dashboard`.
+
 ## Architecture
 
 | Service   | Platform | URL pattern                                      |
@@ -174,7 +178,8 @@ https://unihub-w6ma.onrender.com/api/google/callback
 | CORS / Google redirects to wrong site | `FRONTEND_URL` on Render must match the Vercel URL exactly (https, no trailing slash) |
 | API calls go to localhost | `VITE_API_URL` missing on Vercel → set it and **redeploy** |
 | `redirect_uri_mismatch` | Add exact Render callback URL in Google Console |
-| MongoDB connection failed | Atlas Network Access must allow `0.0.0.0/0` |
+| MongoDB connection failed | Atlas Network Access must allow `0.0.0.0/0`. Local Node TLS errors may need `node --use-system-ca` (already in `backend` npm scripts). |
+| Google says database offline | Backend MongoDB disconnected � check Render logs + Atlas Network Access |
 | Render free tier “sleeps” | First request after idle can take ~30–60s |
 | SPA 404 on refresh | `vercel.json` rewrites to `index.html` (already configured) |
 

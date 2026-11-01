@@ -6,7 +6,8 @@ import ThemeToggle from "../../components/ThemeToggle";
 
 const getGoogleAuthUrl = () => {
   const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-  return `${baseUrl.replace(/\/api\/?$/, "")}/api/google`;
+  const origin = encodeURIComponent(window.location.origin);
+  return `${baseUrl.replace(/\/api\/?$/, "")}/api/google?returnTo=${origin}`;
 };
 
 const Register = () => {
@@ -25,7 +26,7 @@ const Register = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/", { replace: true });
+      navigate("/dashboard", { replace: true });
     }
   }, [isAuthenticated, navigate]);
 
@@ -76,7 +77,7 @@ const Register = () => {
     setErrors({});
     try {
       await register(formData);
-      navigate("/", { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch (error) {
       const msg =
         error?.response?.data?.message ||
