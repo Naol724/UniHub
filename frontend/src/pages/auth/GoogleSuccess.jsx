@@ -22,7 +22,7 @@ const GoogleSuccess = () => {
           console.error("[Google OAuth] Missing token or user in callback");
           setError("Missing authentication data");
           setTimeout(() => {
-            navigate("/user/login?error=google_failed", { replace: true });
+            navigate("/?error=google_failed", { replace: true });
           }, 2000);
           return;
         }
@@ -41,7 +41,7 @@ const GoogleSuccess = () => {
         console.error("[Google OAuth] Error:", err);
         setError(err.message || "Authentication failed");
         setTimeout(() => {
-          navigate("/user/login?error=google_failed", { replace: true });
+          navigate("/?error=google_failed", { replace: true });
         }, 2000);
       }
     };

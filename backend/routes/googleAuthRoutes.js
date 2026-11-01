@@ -182,12 +182,12 @@ router.get("/", (req, res) => {
 
   if (!passportInitialized) {
     console.log("❌ Google OAuth not configured - passport not initialized");
-    return res.redirect(`${returnTo}/user/login?error=google_not_configured`);
+    return res.redirect(`${returnTo}/?error=google_not_configured`);
   }
 
   if (mongoose.connection.readyState !== 1) {
     console.log("❌ Google OAuth blocked - MongoDB is not connected");
-    return res.redirect(`${returnTo}/user/login?error=google_db_unavailable`);
+    return res.redirect(`${returnTo}/?error=google_db_unavailable`);
   }
 
   console.log("↩️  OAuth returnTo:", returnTo);
@@ -215,21 +215,21 @@ router.get("/callback", (req, res, next) => {
 
   if (!passportInitialized) {
     console.log("❌ Google OAuth not configured in callback");
-    return res.redirect(`${FRONTEND_URL}/user/login?error=google_not_configured`);
+    return res.redirect(`${FRONTEND_URL}/?error=google_not_configured`);
   }
 
   passport.authenticate("google", {
-    failureRedirect: `${FRONTEND_URL}/user/login?error=google_failed`,
+    failureRedirect: `${FRONTEND_URL}/?error=google_failed`,
     session: false,
   }, (err, user) => {
     if (err) {
       console.error("❌ Google OAuth Callback Error:", err);
-      return res.redirect(`${FRONTEND_URL}/user/login?error=google_callback_error`);
+      return res.redirect(`${FRONTEND_URL}/?error=google_callback_error`);
     }
 
     if (!user) {
       console.error("❌ Google OAuth - No user returned");
-      return res.redirect(`${FRONTEND_URL}/user/login?error=google_no_user`);
+      return res.redirect(`${FRONTEND_URL}/?error=google_no_user`);
     }
 
     console.log("✅ Google OAuth Success - User:", user.email);
